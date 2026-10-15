@@ -177,9 +177,35 @@ The anti-pattern is to flush caches or restart services before establishing whic
 
 Senior commerce engineering begins with boundaries, ownership, consistency, and evidence. The official SAP learning references anchor the subject areas; this module supplies original reasoning patterns, a safe simulation, and competency evidence. The next modules will deepen the specific platform mechanisms only after their applicable sources are verified.
 
+## SAP-specific architecture notes (2211 scope)
+
+The following statements are platform-specific and should not be generalized to arbitrary commerce platforms:
+
+- SAP describes Commerce Cloud as modular and extension-based. An extension can contain business logic, type definitions, a web application, or Backoffice configuration, and extensions can declare dependencies [SAP-HELP-EXTENSION].
+- SAP documentation distinguishes extension components such as `coremodule` and `webmodule`. The core component contains type definitions and Java source; web components contain web application parts [SAP-HELP-EXTENSION-COMPONENTS].
+- SAP Commerce Cloud 2211 is documented as public-cloud-only in the current product documentation. The Cloud Portal handles environment setup, builds, deployments, security configuration, and log access [SAP-HELP-ABOUT-COMMERCE] [SAP-HELP-CLOUD-PORTAL].
+- OCC is SAP’s set of commerce-oriented REST web services. The current OCC documentation describes OAuth 2.0 as the default authorization framework for commerce-driven web services [SAP-HELP-OCC-FEATURES].
+- SAP documents the ServiceLayer as the preferred API layer in the `items.xml` reference, while legacy Jalo references still appear in that documentation. Treat the existence of legacy material as a version-aware documentation concern, not as a recommendation to write new Jalo code [SAP-HELP-ITEMS].
+
+### Architecture reading exercise
+
+For each proposed change, classify the statement as one of three types: **SAP fact**, **engineering recommendation**, or **simulation behavior**. Example: “OCC uses OAuth 2.0 by default” is an SAP-documented fact for the cited scope. “Every API should expose a separate DTO” is an engineering recommendation. “The local lab returns `PROJECTION_STALE`” is simulation behavior. The classification is part of the evidence, because unmarked interpretation is a common source of hallucinated platform rules.
+
+## Advanced review
+
+1. Why does an extension dependency graph affect both build reproducibility and runtime behavior?
+2. What is the risk of copying a 2205 example into a 2211 implementation without checking the current reference?
+3. Why should a storefront or OCC controller avoid owning persistence invariants?
+4. What would you measure to distinguish a slow DAO from a slow downstream integration?
+5. Which evidence would allow an incident responder to say “the source model is correct but the read projection is stale”?
+
 ## References
 
 - [SAP-LEARN-JOURNEY-IMPLEMENT] Implementing SAP Commerce Cloud — official learning journey.
 - [SAP-LEARN-TECH-ESSENTIALS] Exploring the Technical Essentials of SAP Commerce Cloud — official course.
 - [SAP-HELP-COMMERCE-PUBLIC] SAP Commerce Cloud Public Cloud documentation — source record currently marked research gap.
 - [SAP-HELP-COMPOSABLE] SAP Commerce Composable Storefront documentation — source record currently marked research gap.
+- [SAP-HELP-EXTENSION] Extension Concept — official SAP Help Portal, 2211.
+- [SAP-HELP-OCC-FEATURES] OCC Features — official SAP Help Portal, 2211.
+- [SAP-HELP-ABOUT-COMMERCE] About SAP Commerce Cloud — official SAP Help Portal, 2211.
+- [SAP-HELP-CLOUD-PORTAL] Cloud Portal — official SAP Help Portal, 2211.

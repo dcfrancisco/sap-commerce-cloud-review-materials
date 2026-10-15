@@ -15,7 +15,9 @@ htmlcov/
 # Generated publication and build output
 dist/
 build/
+tmp/
 *.egg-info/
+data/
 
 # Local runtime state and editor files
 .env

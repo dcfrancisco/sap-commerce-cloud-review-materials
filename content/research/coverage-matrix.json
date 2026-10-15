@@ -1,0 +1,33 @@
+{
+  "schemaVersion":"source-coverage.v1",
+  "release":"0.2.0-research-milestone",
+  "modules":[
+    {"moduleId":"M01","status":"covered","official":["SAP-LEARN-JOURNEY-IMPLEMENT","SAP-HELP-ABOUT-COMMERCE","SAP-HELP-EXTENSION","RS-SAP-HELP-DEPRECATION"],"supplementary":["RS-SAP-GITHUB-CLOUD-SAMPLE"],"gaps":["cluster topology details require licensed/runtime evidence"]},
+    {"moduleId":"M02","status":"covered","official":["SAP-HELP-EXTENSION","SAP-HELP-EXTENSION-COMPONENTS","SAP-HELP-CLOUD-PORTAL","RS-SAP-GITHUB-CLOUD-SAMPLE"],"supplementary":[],"gaps":["local build commands remain release-distribution dependent"]},
+    {"moduleId":"M03","status":"covered","official":["SAP-HELP-ITEMS","SAP-HELP-DATA-MODELS","RS-SAP-HELP-DB-DESIGN","RS-SAP-HELP-TYPE-UPDATES","RS-SAP-LEARN-DEPLOYMENT"],"supplementary":["RS-INDEPENDENT-CCI-DATA"],"gaps":["database-vendor-specific DDL behavior not yet covered"]},
+    {"moduleId":"M04","status":"covered","official":["SAP-HELP-SERVICELAYER","SAP-HELP-TRANSACTIONS","RS-SAP-HELP-PLATFORM"],"supplementary":["RS-STACK-FLEX-TRANSLATION"],"gaps":["current FlexibleSearch tuning reference and executable Commerce runtime tests unavailable"]},
+    {"moduleId":"M05","status":"covered-version-sensitive","official":["SAP-HELP-OCC-FEATURES","SAP-HELP-OCC-ARCH","RS-SAP-HELP-DEPRECATION","RS-SAP-HELP-OAUTH-MIGRATION"],"supplementary":["RS-SAP-GITHUB-SPARTACUS"],"gaps":["endpoint-by-endpoint current API contract requires target runtime/OpenAPI export"]},
+    {"moduleId":"M06","status":"researching","official":["SAP-HELP-SERVICELAYER","RS-SAP-HELP-JDK21"],"supplementary":[],"gaps":["Spring bean override and context hierarchy references"]},
+    {"moduleId":"M07","status":"researching","official":["SAP-LEARN-TECH-ESSENTIALS","SAP-HELP-SERVICELAYER"],"supplementary":[],"gaps":["converter/populator extension examples and tests"]},
+    {"moduleId":"M08","status":"researching","official":["RS-SAP-HELP-SYNC","RS-SAP-HELP-SOLR-VISIBILITY"],"supplementary":[],"gaps":["classification and synchronization internals"]},
+    {"moduleId":"M09","status":"researching","official":["SAP-LEARN-TECH-ESSENTIALS"],"supplementary":["RS-SAP-COMM-CLEANUP"],"gaps":["current ImpEx reference, validation modes, distributed import behavior"]},
+    {"moduleId":"M10","status":"gap","official":["SAP-HELP-OCC-FEATURES"],"supplementary":[],"gaps":["cart/order/payment/process references and failure semantics"]},
+    {"moduleId":"M11","status":"researching","official":["SAP-HELP-B2B-ARCH"],"supplementary":[],"gaps":["approval process, quotes, permissions, and current B2B APIs"]},
+    {"moduleId":"M12","status":"researching","official":["SAP-HELP-OCC-FEATURES","RS-SAP-HELP-OAUTH-MIGRATION","RS-SAP-HELP-DEPRECATION"],"supplementary":["RS-SAP-GITHUB-SPARTACUS"],"gaps":["full Storefront API/OpenAPI compatibility matrix"]},
+    {"moduleId":"M13","status":"researching","official":["SAP-HELP-COMPOSABLE","RS-SAP-GITHUB-SPARTACUS"],"supplementary":[],"gaps":["current supported library docs remain partly gated"]},
+    {"moduleId":"M14","status":"researching","official":["RS-SAP-HELP-SOLR-VISIBILITY","RS-SAP-KBA-SOLR"],"supplementary":["RS-SAP-COMM-SOLR"],"gaps":["KBA full text gated; indexer internals and current Solr compatibility"]},
+    {"moduleId":"M15","status":"gap","official":[],"supplementary":[],"gaps":["promotions, coupons, rule engine, personalization sources"]},
+    {"moduleId":"M16","status":"researching","official":["RS-SAP-HELP-PLATFORM"],"supplementary":["RS-SAP-COMM-CLEANUP"],"gaps":["process definition schema, retries, eventing, node groups"]},
+    {"moduleId":"M17","status":"gap","official":[],"supplementary":[],"gaps":["Backoffice widgets, validation, CMS/SmartEdit current references"]},
+    {"moduleId":"M18","status":"researching","official":["RS-SAP-GITHUB-ERP-EXT"],"supplementary":["RS-HIST-RETAIL-22"],"gaps":["Integration API, S/4HANA, messaging, outbound sync authoritative coverage"]},
+    {"moduleId":"M19","status":"gap","official":[],"supplementary":[],"gaps":["SAP CX ecosystem and identity/data integration sources"]},
+    {"moduleId":"M20","status":"researching","official":["SAP-HELP-CLOUD-PORTAL","RS-SAP-GITHUB-CLOUD-SAMPLE","RS-SAP-HELP-JDK21"],"supplementary":["RS-SAP-COMM-UPGRADE"],"gaps":["rollback, canary/blue-green current availability, build API"]},
+    {"moduleId":"M21","status":"researching","official":["RS-SAP-HELP-OAUTH-MIGRATION","RS-SAP-HELP-JDK21"],"supplementary":[],"gaps":["security guide, access rights, privacy, vulnerability response"]},
+    {"moduleId":"M22","status":"researching","official":["RS-SAP-HELP-PLATFORM"],"supplementary":[],"gaps":["cache migration, DB throttling, load testing, sizing evidence"]},
+    {"moduleId":"M23","status":"gap","official":[],"supplementary":[],"gaps":["JUnit 5, platform annotations, integration-test runtime, test isolation"]},
+    {"moduleId":"M24","status":"researching","official":["RS-SAP-HELP-DEPRECATION","RS-SAP-HELP-JDK21","RS-SAP-GITHUB-CLOUD-SAMPLE"],"supplementary":["RS-SAP-COMM-UPGRADE"],"gaps":["operating model, incident response, release governance"]},
+    {"moduleId":"M25","status":"covered-version-sensitive","official":["RS-SAP-CS-DEPS","RS-SAP-CS-PERF","RS-SAP-CS-A11Y","RS-SAP-CS-FEATURE-FLAGS","RS-SAP-CS-2211217","RS-SAP-GITHUB-SPARTACUS"],"supplementary":[],"gaps":["no licensed supported storefront package or live OCC backend available for execution"]},
+    {"moduleId":"M26","status":"covered","official":["RS-SAP-BACKOFFICE","RS-SAP-BACKEND-ADMIN","RS-SAP-HELP-SYNC","RS-SAP-HELP-PLATFORM"],"supplementary":["RS-SAP-COMM-CLEANUP"],"gaps":["no live Backoffice/HAC tenant; destructive administrative actions remain simulation-only"]},
+    {"moduleId":"M27","status":"covered","official":["SAP-HELP-CLOUD-PORTAL","RS-SAP-ENV-LOGS","RS-SAP-PLATFORM-LOGGING","RS-SAP-DYNATRACE","RS-SAP-DEPLOY-ROLLBACK","RS-SAP-CLUSTER-UPGRADE"],"supplementary":["RS-SAP-COMM-UPGRADE"],"gaps":["no Cloud Portal subscription, production telemetry, or recovery environment available"]}
+  ]
+}

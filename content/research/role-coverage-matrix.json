@@ -1,0 +1,14 @@
+{
+  "schemaVersion":"role-coverage.v1",
+  "levels":["foundation","intermediate","advanced","expert"],
+  "roles":[
+    {"role":"backend-developer","modules":["M01","M02","M03","M04","M05","M06","M07","M09","M16","M23"],"implementedLevels":["foundation","intermediate"],"gaps":["real platform execution","advanced process/testing labs"]},
+    {"role":"storefront-engineer","modules":["M05","M12","M13","M25"],"implementedLevels":["foundation"],"gaps":["runnable Angular workspace","B2B","SSR/E2E execution"]},
+    {"role":"administrator","modules":["M08","M09","M16","M17","M26"],"implementedLevels":["foundation"],"gaps":["live Backoffice/HAC exercises","permission matrix"]},
+    {"role":"devops-engineer","modules":["M20","M21","M22","M27"],"implementedLevels":["foundation"],"gaps":["Cloud Portal tenant","pipeline and recovery execution"]},
+    {"role":"production-support","modules":["M14","M16","M22","M24","M27"],"implementedLevels":["foundation","intermediate"],"gaps":["larger incident library","telemetry replay"]},
+    {"role":"integration-engineer","modules":["M12","M18","M19"],"implementedLevels":[],"gaps":["Integration API/Suite/S4 end-to-end slice"]},
+    {"role":"qa-engineer","modules":["M05","M13","M23","M25","M27"],"implementedLevels":["foundation"],"gaps":["platform test runtime","browser automation","load testing"]},
+    {"role":"architect","modules":["M01","M18","M19","M21","M22","M24","M25","M27"],"implementedLevels":["foundation"],"gaps":["cross-product decision casebook","cost/reliability evidence"]}
+  ]
+}

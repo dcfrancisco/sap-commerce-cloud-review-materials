@@ -1,0 +1,15 @@
+{
+  "schemaVersion":"source-governance.v1",
+  "tiers":[
+    {"id":"official-authoritative","usage":"May support current SAP-specific behavior when product version and retrieval date match."},
+    {"id":"official-educational","usage":"May support learning scope; implementation claims still require Help/API documentation."},
+    {"id":"official-supplementary","usage":"May illustrate code/configuration; verify branch, release, license, and current support status."},
+    {"id":"official-historical","usage":"Legacy context only; never imply current support without a current source."},
+    {"id":"official-restricted","usage":"Record metadata and access gap; do not claim gated details were inspected."},
+    {"id":"community-unverified","usage":"Scenarios and hypotheses only; cross-check every platform claim."},
+    {"id":"independent-unverified","usage":"Teaching interpretation and operational heuristics only; cross-check platform behavior."},
+    {"id":"discussion-unverified","usage":"Question discovery and failure scenarios only; never authoritative."}
+  ],
+  "requiredFields":["id","title","publisher","author","url","publishedDate","retrievedDate","sourceType","authorityTier","platformVersions","topics","verificationStatus","access"],
+  "publicationRule":"A completed module needs at least three applicable official references, explicit version scope, and recorded unresolved gaps. Supplementary sources never satisfy the official minimum alone."
+}

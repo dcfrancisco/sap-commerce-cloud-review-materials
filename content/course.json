@@ -5,11 +5,11 @@
   "release": "0.1.0",
   "status": "vertical-slice",
   "modules": [
-    {"id":"M01","title":"Architecture and Fundamentals","status":"complete"},
-    {"id":"M02","title":"Development Environment, Builds, and Configuration","status":"planned"},
-    {"id":"M03","title":"Extension Architecture and Customization","status":"planned"},
-    {"id":"M04","title":"Type System, items.xml, and Data Modeling","status":"planned"},
-    {"id":"M05","title":"ModelService, Persistence, Transactions, and FlexibleSearch","status":"planned"},
+    {"id":"M01","title":"Architecture and Fundamentals","status":"implemented-review-required"},
+    {"id":"M02","title":"Development Environment, Builds, Configuration, and Extension Architecture","status":"implemented-review-required"},
+    {"id":"M03","title":"Type System, items.xml, and Data Modeling","status":"implemented-review-required"},
+    {"id":"M04","title":"ModelService, Persistence, Transactions, and FlexibleSearch","status":"implemented-review-required"},
+    {"id":"M05","title":"OCC, REST APIs, OAuth, and API Contract Design","status":"implemented-review-required"},
     {"id":"M06","title":"Java, Spring, Dependency Injection, and Service Layer Architecture","status":"planned"},
     {"id":"M07","title":"DAO, Service, Facade, Converter, and Populator Patterns","status":"planned"},
     {"id":"M08","title":"Product Information, Catalogs, Classification, and Synchronization","status":"planned"},
@@ -28,7 +28,10 @@
     {"id":"M21","title":"Security, Identity, Authorization, Privacy, and Compliance","status":"planned"},
     {"id":"M22","title":"Performance, Scalability, Caching, and Reliability","status":"planned"},
     {"id":"M23","title":"Software Testing, Integration Testing, and Quality Engineering","status":"planned"},
-    {"id":"M24","title":"Technical Leadership, Architecture, SDLC, and Production Operations","status":"planned"}
+    {"id":"M24","title":"Technical Leadership, Architecture, SDLC, and Production Operations","status":"planned"},
+    {"id":"M25","title":"Composable Storefront / Spartacus Engineering","status":"implemented-review-required"},
+    {"id":"M26","title":"Backoffice and Administration Operations","status":"implemented-review-required"},
+    {"id":"M27","title":"Cloud Operations and Incident Management","status":"implemented-review-required"}
   ],
   "sourcePolicy": "Every substantive SAP-specific claim must map to a source record; simulation behavior is labeled separately."
 }

@@ -1,0 +1,18 @@
+{
+  "schemaVersion":"publication-plan.v1",
+  "status":"intended-not-published",
+  "volumes":[
+    {"id":"PUB-ADMIN","title":"SAP Commerce Cloud Administration","sourceModules":["M08","M09","M16","M17","M26"],"status":"planned"},
+    {"id":"PUB-BACKOFFICE","title":"SAP Commerce Backoffice Engineering and Administration","sourceModules":["M17","M26"],"status":"planned"},
+    {"id":"PUB-HAC","title":"HAC and Platform Troubleshooting","sourceModules":["M04","M09","M16","M26"],"status":"planned"},
+    {"id":"PUB-OPS","title":"SAP Commerce Cloud Deployment and Operations","sourceModules":["M20","M27"],"status":"planned"},
+    {"id":"PUB-PERF","title":"SAP Commerce Performance and Capacity Engineering","sourceModules":["M14","M22","M25","M27"],"status":"planned"},
+    {"id":"PUB-OBS","title":"SAP Commerce Monitoring, Observability, and Incident Management","sourceModules":["M22","M27"],"status":"planned"},
+    {"id":"PUB-SECADMIN","title":"SAP Commerce Security Administration","sourceModules":["M21","M26","M27"],"status":"planned"},
+    {"id":"PUB-DR","title":"SAP Commerce Backup, Recovery, and Disaster Recovery","sourceModules":["M20","M27"],"status":"planned"},
+    {"id":"PUB-UPGRADE","title":"SAP Commerce Upgrade and Migration Engineering","sourceModules":["M02","M03","M24","M25","M27"],"status":"planned"},
+    {"id":"PUB-STOREFRONT","title":"SAP Composable Storefront / Spartacus Engineering","sourceModules":["M13","M25"],"status":"planned"},
+    {"id":"PUB-STOREFRONT-OPS","title":"Composable Storefront Testing, Performance, and Operations","sourceModules":["M23","M25","M27"],"status":"planned"},
+    {"id":"PUB-ECOSYSTEM","title":"SAP Commerce Enterprise Integration and SAP CX Ecosystem","sourceModules":["M18","M19"],"status":"planned"}
+  ]
+}
