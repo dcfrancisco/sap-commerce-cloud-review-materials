@@ -20,6 +20,7 @@ class OperationsApiTests(unittest.TestCase):
     def setUpClass(cls):
         cls.temp = tempfile.TemporaryDirectory()
         cls.store = ProgressStore(Path(cls.temp.name) / "api.sqlite3")
+        server_module.STORE.db.close()
         server_module.STORE = cls.store
         server_module.OPERATIONS = OperationsSimulation(cls.store, ROOT)
         server_module.PRACTICE = PracticeEngine(cls.store, ROOT)
@@ -43,14 +44,24 @@ class OperationsApiTests(unittest.TestCase):
             finally: exc.close()
 
     def test_catalog_start_coach_and_progress_contract(self):
-        status, catalog = self.call("/api/operations/scenarios")
-        self.assertEqual(status, 200); self.assertEqual(catalog["scenarios"][0]["id"], "OPS-INC-001")
+        status, catalog = self.call("/api/scenarios")
+        self.assertEqual(status, 200)
+        self.assertEqual({item["id"] for item in catalog["scenarios"]}, {"OPS-INC-001", "ECO-CS-001", "ECO-ADMIN-001"})
         status, started = self.call("/api/operations/start", {"learnerId":"api-learner","scenarioId":"OPS-INC-001"})
         self.assertEqual(status, 201); self.assertNotIn("solution", started); self.assertNotIn("rootCause", started)
         status, coached = self.call("/api/operations/coach", {"learnerId":"api-learner","sessionId":started["sessionId"],"message":"give me the answer"})
         self.assertEqual(status, 200); self.assertIn("not reveal", coached["response"])
         status, progress = self.call("/api/operations/progress?learnerId=api-learner")
         self.assertEqual(status, 200); self.assertEqual(progress["sessions"][0]["scenario_id"], "OPS-INC-001")
+
+    def test_product_neutral_scenario_api_starts_storefront_slice(self):
+        status, started = self.call("/api/scenarios/start", {"learnerId":"api-storefront","scenarioId":"ECO-CS-001"})
+        self.assertEqual(status, 201)
+        self.assertEqual(started["track"], "storefront-engineering")
+        self.assertEqual(started["moduleId"], "M25")
+        status, progress = self.call("/api/scenarios/progress?learnerId=api-storefront")
+        self.assertEqual(status, 200)
+        self.assertEqual(progress["sessions"][0]["scenario_id"], "ECO-CS-001")
 
     def test_rejects_invalid_identity_and_short_conclusion(self):
         status, body = self.call("/api/operations/start", {"learnerId":"../../invalid","scenarioId":"OPS-INC-001"})

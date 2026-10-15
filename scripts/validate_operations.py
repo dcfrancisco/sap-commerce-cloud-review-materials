@@ -14,12 +14,13 @@ def load(relative):
 course = load("content/operations/course.json")
 roles = load("content/operations/role-paths.json")
 competencies = load("content/operations/competencies.json")
+general_competencies = load("content/competencies.json")
 responsibilities = load("content/operations/responsibility-matrix.json")
 dependencies = load("content/operations/module-dependencies.json")
 publications = load("content/operations/publication-map.json")
 gates = load("content/operations/release-gates.json")
 coverage = load("content/operations/source-coverage.json")
-scenario = load("content/operations/scenarios/ops-inc-001.json")
+scenarios = [load(str(path.relative_to(ROOT))) for path in sorted((ROOT / "content/operations/scenarios").glob("*.json"))]
 assessment = load("content/operations/assessments/ops-d03-m01.json")
 exercise_families = [load(str(path.relative_to(ROOT))) for path in sorted((ROOT / "content/operations/exercises").glob("*.json"))]
 sources = load("content/research/source-registry.json")
@@ -27,7 +28,7 @@ foundational_sources = load("content/sources.json")
 exercise_schema = load("content/schemas/operations-exercise-family.schema.json")
 
 domains = course.get("domains", []); modules = [module for domain in domains for module in domain.get("modules", [])]
-module_ids = {module.get("id") for module in modules}; competency_ids = {item.get("id") for item in competencies.get("competencies", [])}; source_ids = {item.get("id") for item in sources.get("sources", []) + foundational_sources.get("sources", [])}
+module_ids = {module.get("id") for module in modules}; competency_ids = {item.get("id") for item in competencies.get("competencies", [])}; all_competency_ids = competency_ids | {item.get("id") for item in general_competencies.get("competencies", [])}; source_ids = {item.get("id") for item in sources.get("sources", []) + foundational_sources.get("sources", [])}
 if len(domains) != 12: errors.append(f"expected 12 domains, found {len(domains)}")
 if len(modules) != 60: errors.append(f"expected 60 modules, found {len(modules)}")
 if len(module_ids) != len(modules): errors.append("duplicate operations module IDs")
@@ -57,18 +58,30 @@ for section in ("Learning outcomes","Schema compatibility","Guided simulation","
 for source_id in set(re.findall(r"\[(RS-[A-Z0-9-]+)\]", manual)):
     if source_id not in source_ids: errors.append(f"manual unknown source {source_id}")
 
-if scenario.get("schemaVersion") != "operations-scenario.v1": errors.append("invalid scenario schema")
-if len(scenario.get("investigations", [])) < 6 or len(scenario.get("actions", [])) < 6: errors.append("scenario lacks investigative/action depth")
-action_ids = {item.get("id") for item in scenario.get("actions", [])}; investigation_ids = {item.get("id") for item in scenario.get("investigations", [])}
-all_action_ids = action_ids | investigation_ids
-for item in scenario.get("actions", []) + scenario.get("investigations", []):
-    for requirement in item.get("requires", []):
-        if requirement not in all_action_ids: errors.append(f"{item.get('id')}: unknown prerequisite {requirement}")
-if not any(not item.get("permitted", True) for item in scenario.get("actions", [])): errors.append("scenario has no prohibited action")
-for competency_id in scenario.get("competencyIds", []):
-    if competency_id not in competency_ids: errors.append(f"scenario unknown competency {competency_id}")
-for source_id in scenario.get("sourceIds", []):
-    if source_id not in source_ids: errors.append(f"scenario unknown source {source_id}")
+scenario_ids = set()
+for scenario in scenarios:
+    scenario_id = scenario.get("id")
+    if scenario_id in scenario_ids: errors.append(f"duplicate scenario {scenario_id}")
+    scenario_ids.add(scenario_id)
+    if scenario.get("schemaVersion") != "operations-scenario.v1": errors.append(f"{scenario_id}: invalid scenario schema")
+    if len(scenario.get("investigations", [])) < 6 or len(scenario.get("actions", [])) < 6: errors.append(f"{scenario_id}: lacks investigative/action depth")
+    action_ids = {item.get("id") for item in scenario.get("actions", [])}; investigation_ids = {item.get("id") for item in scenario.get("investigations", [])}
+    all_action_ids = action_ids | investigation_ids
+    for item in scenario.get("actions", []) + scenario.get("investigations", []):
+        for requirement in item.get("requires", []):
+            if requirement not in all_action_ids: errors.append(f"{scenario_id}/{item.get('id')}: unknown prerequisite {requirement}")
+    if not any(not item.get("permitted", True) for item in scenario.get("actions", [])): errors.append(f"{scenario_id}: has no prohibited action")
+    scoring = scenario.get("scoring", {})
+    if scoring.get("preferredRecovery") not in action_ids or scoring.get("verificationAction") not in action_ids: errors.append(f"{scenario_id}: invalid recovery or verification action")
+    if not scoring.get("integrityEvidence") or not set(scoring.get("integrityEvidence", [])) <= investigation_ids: errors.append(f"{scenario_id}: invalid integrity evidence")
+    tutor = scenario.get("tutor", {})
+    if len(tutor.get("sequence", [])) < 5 or not tutor.get("citations") or not tutor.get("uncertainty"): errors.append(f"{scenario_id}: incomplete grounded tutor sequence")
+    for prompt in tutor.get("sequence", []):
+        if prompt.get("until") not in all_action_ids: errors.append(f"{scenario_id}: tutor references unknown step {prompt.get('until')}")
+    for competency_id in scenario.get("competencyIds", []):
+        if competency_id not in all_competency_ids: errors.append(f"{scenario_id}: unknown competency {competency_id}")
+    for source_id in scenario.get("sourceIds", []):
+        if source_id not in source_ids: errors.append(f"{scenario_id}: unknown source {source_id}")
 
 items = assessment.get("items", []); prompts = set(); item_ids = set()
 required_fields = {"id","moduleId","competencyIds","type","difficulty","scenario","prompt","answer","explanation","rubric","applicableVersion","sourceIds","evaluationEvidence","reviewStatus","version"}
@@ -115,7 +128,7 @@ if gates.get("commercialReleaseEligible") is not False or "fail" not in gate_sta
 if gates.get("humanReviews", {}).get("sapTechnical") != "pending": errors.append("human SAP review must remain pending")
 
 print(f"operations curriculum: {len(domains)} domains, {len(modules)} modules; implemented-review-required={sum(m.get('status') == 'implemented-review-required' for m in modules)}, complete={sum(m.get('status') == 'complete' for m in modules)}")
-print(f"operations assets: roles={len(roles.get('roles', []))}, competencies={len(competency_ids)}, scenarios=1, exercises={len(exercises)}, assessment-items={len(items)}, publications-planned={len(publications.get('volumes', []))}")
+print(f"operations assets: roles={len(roles.get('roles', []))}, competencies={len(competency_ids)}, scenarios={len(scenarios)}, exercises={len(exercises)}, assessment-items={len(items)}, publications-planned={len(publications.get('volumes', []))}")
 print("commercial gates: " + ", ".join(f"{gate['id']}={gate['status']}" for gate in gates.get("gates", [])))
 if errors:
     print("OPERATIONS QA FAILED\n" + "\n".join(f"- {error}" for error in errors)); sys.exit(1)

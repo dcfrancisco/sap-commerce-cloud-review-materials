@@ -3,6 +3,8 @@
   "id":"OPS-INC-001",
   "version":"1.0.0",
   "title":"Failed Migrate-Data Deployment with Schema Compatibility Risk",
+  "track":"operations-sre",
+  "moduleId":"OPS-D03-M01",
   "difficulty":"advanced",
   "reviewStatus":"implemented-machine-validated",
   "estimatedMinutes":45,
@@ -29,7 +31,18 @@
     {"id":"initialize-production","label":"Initialize the production database","minutes":2,"risk":"critical","permitted":false,"outcome":"The simulator blocks direct execution and records a prohibited destructive decision.","consequence":"Initialization would erase business data and is not an available live-production recovery strategy.","stateChanges":{"businessImpact":"Prohibited data-loss action attempted"}},
     {"id":"restore-predeploy-backup","label":"Initiate controlled pre-deployment database/media/build restore","minutes":30,"risk":"high","permitted":true,"requires":["inspect-backup","freeze-deployments","engage-sap-support"],"outcome":"The environment is restored to the captured state using the supported workflow.","consequence":"Post-restore full indexing and cross-system transaction reconciliation remain mandatory.","stateChanges":{"serviceState":"recovering","schemaState":"predeployment","businessImpact":"Recovery in progress; post-backup transactions require reconciliation"}}
   ],
-  "scoring":{"requiredEvidence":["inspect-deployment-history","inspect-error-logs","inspect-api-metrics","inspect-schema-diff","inspect-backup","inspect-business-transactions"],"conceptGroups":[["migration","migrate","schema"],["mapping","deployment","metadata"],["rollback","compatibility","additive"],["backup","restore","media"],["reconcile","payment","order"],["verify","health","acceptance"],["support","escalate","managed"],["timeline","impact","owner"]],"preferredRecovery":"redeploy-corrected-migrate","verificationAction":"validate-recovery","escalationAction":"engage-sap-support","passThreshold":0.8},
+  "scoring":{"requiredEvidence":["inspect-deployment-history","inspect-error-logs","inspect-api-metrics","inspect-schema-diff","inspect-backup","inspect-business-transactions"],"conceptGroups":[["migration","migrate","schema"],["mapping","deployment","metadata"],["rollback","compatibility","additive"],["backup","restore","media"],["reconcile","payment","order"],["verify","health","acceptance"],["support","escalate","managed"],["timeline","impact","owner"]],"preferredRecovery":"redeploy-corrected-migrate","verificationAction":"validate-recovery","escalationAction":"engage-sap-support","integrityEvidence":["inspect-backup","inspect-schema-diff"],"communicationTerms":["timeline","impact","owner"],"improvementTerms":["rehearsal","additive","gate","runbook","alert"],"passThreshold":0.8},
+  "tutor":{"sequence":[
+    {"until":"inspect-deployment-history","prompt":"Start by establishing chronology: which environment, deployment, build, commit, migration mode, start time, and failure time define this incident?"},
+    {"until":"inspect-error-logs","prompt":"Which time-bounded, correlated log evidence would distinguish the first migration failure from later startup symptoms?"},
+    {"until":"inspect-api-metrics","prompt":"Test competing causes with metrics. Did JVM, database, dependency, or API indicators deteriorate before activation failed?"},
+    {"until":"inspect-schema-diff","prompt":"Before proposing rollback, identify which persistent changes completed and what evidence establishes old-build compatibility."},
+    {"until":"inspect-backup","prompt":"Establish backup scope, recovery ownership, and what is excluded from the recovery point."},
+    {"until":"inspect-business-transactions","prompt":"Recovery affects external state. Establish the payment and order divergence window before selecting a retry or restore."},
+    {"until":"freeze-deployments","prompt":"Your evidence is sufficient to contain change risk. Assign incident command and decide whether further deployments should remain possible."},
+    {"until":"redeploy-corrected-migrate","prompt":"Defend a recovery choice against schema compatibility, RPO/RTO, media and search scope, and transaction reconciliation."},
+    {"until":"validate-recovery","prompt":"A started application is not a recovered commerce service. Define independent technical and business acceptance checks."}
+  ],"conclusionPrompt":"Prepare your conclusion: timeline, impact, cause with uncertainty, safe recovery rationale, integrity checks, escalation, and systemic prevention.","citations":["RS-SAP-DEPLOY-ROLLBACK","RS-SAP-ENV-LOGS","lesson:OPS-D03-M01"],"uncertainty":"Simulation coaching distinguishes documented product boundaries from synthetic scenario behavior."},
   "solution":{"rootCause":"A conflicting custom deployment mapping caused the migrate-data phase to fail after an additive schema change had begun. The old build was not proven schema-compatible.","recovery":"Freeze changes, preserve evidence, correct and rehearse the mapping, deploy a schema-compatible corrected build with migrate data, verify all critical journeys, and reconcile payment/order exceptions. Use supported backup/restore with SAP Support involvement when corrected forward recovery cannot safely restore service."},
   "sourceIds":["RS-SAP-DEPLOY-ROLLBACK","RS-SAP-ENV-LOGS","RS-SAP-DATABASE-SERVICES","RS-SAP-TYPE-SYSTEM-VERSIONING","RS-SAP-DATA-BACKUP-RESTORE","RS-SAP-DYNATRACE-TROUBLESHOOT"]
 }

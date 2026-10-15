@@ -22,7 +22,7 @@ The supplied workspace contained only `.` and had no Git metadata, source files,
 | --- | --- | --- |
 | Learner service | Local Python HTTP service with module, assessment, tutor, progress, incident, and operations APIs | No production auth, tenant isolation, rate limiting, or hosted deployment |
 | Persistence | SQLite assessment attempts, competency evidence, incident sessions, event streams, and results | Local single-user model only; migrations and retention policy need formalization |
-| Operations simulation | One deterministic failed-deployment scenario with progressive evidence, actions, unsafe consequences, reset, scoring, and coaching | Synthetic only; no claim of complete SAP runtime emulation |
+| Ecosystem simulation | Three deterministic stateful scenarios - Composable Storefront stale price, Backoffice sync/index failure, and failed deployment - with progressive evidence, consequential actions, unsafe hard-fails, reset, scoring, coaching, and persisted evidence | Synthetic only; no claim of complete SAP, storefront, CDN, Backoffice, or cloud runtime emulation |
 | Deep practice | Ten exercise modes with seeded constraints, progressive hints, protected solutions, deterministic grading, and persisted assisted/independent evidence | Machine-validated only; no human educational or technical review |
 | Content | General 27-module roadmap plus Operations/SRE 60-module specialization roadmap | Eight general and one operations module authored; all remain review-required |
 | Publication | Reproducible HTML/PDF module generation and machine QA | Human technical/editorial/accessibility review pending |
@@ -32,4 +32,4 @@ The supplied workspace contained only `.` and had no Git metadata, source files,
 
 ## Known research gaps
 
-The source registry now distinguishes inspected official pages from restricted, historical, community, and independent sources. Current official operational pages for Cloud Portal, deployment rollback, database services, backups, logs, Dynatrace, type-system versioning, and managed Kubernetes upgrades were inspected on 2026-10-16. Subscription-specific behavior, restricted support content, and live-runtime validation remain explicit gaps.
+The source registry now distinguishes inspected official pages from restricted, historical, community, and independent sources. Current official pages for Composable Storefront dependencies and release policy, SSR architecture, Backoffice synchronization, search/index configuration, Cloud Portal, deployment rollback, database services, backups, logs, Dynatrace, type-system versioning, and managed Kubernetes upgrades were inspected on 2026-10-16. Subscription-specific behavior, restricted support content, and live-runtime validation remain explicit gaps.

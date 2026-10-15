@@ -14,6 +14,7 @@ general_items = [item for path in sorted((ROOT / "content/assessments").glob("mo
 sources = load("content/sources.json")["sources"] + load("content/research/source-registry.json")["sources"]
 scenario_files = sorted((ROOT / "content/operations/scenarios").glob("*.json"))
 operations_scenarios = [json.loads(path.read_text()) for path in scenario_files]
+scenario_tracks = {track:sum(scenario.get("track", "operations-sre") == track for scenario in operations_scenarios) for track in sorted({scenario.get("track", "operations-sre") for scenario in operations_scenarios})}
 manual_sources = sorted((ROOT / "content/modules").glob("*.md")) + sorted((ROOT / "content/operations/modules").glob("*.md"))
 machine_validated_pdfs = sum((ROOT / "dist" / f"{path.stem}.pdf").exists() for path in manual_sources)
 
@@ -23,7 +24,7 @@ report = {
     "examples":{"technicallyHumanReviewed":0,"executableDeterministicScenarios":len(operations_scenarios)},
     "exercises":{"authored":len(exercises),"machineValidated":sum(exercise["reviewStatus"] == "implemented-machine-validated" for exercise in exercises),"humanReviewed":sum(exercise["reviewStatus"] in {"human-reviewed","published"} for exercise in exercises),"seededVariantsCountedAsAssets":0},
     "assessments":{"generalValidated":sum(item.get("reviewStatus") == "validated" for item in general_items),"operationsInternallyValidated":sum(item.get("reviewStatus") == "validated-internal" for item in operations_items),"operationsPublished":sum(item.get("reviewStatus") == "published" for item in operations_items)},
-    "scenarios":{"implementedMachineValidated":sum(item.get("reviewStatus") == "implemented-machine-validated" for item in operations_scenarios),"humanReviewed":sum(item.get("reviewStatus") in {"human-reviewed","published"} for item in operations_scenarios)},
+    "scenarios":{"implementedMachineValidated":sum(item.get("reviewStatus") == "implemented-machine-validated" for item in operations_scenarios),"humanReviewed":sum(item.get("reviewStatus") in {"human-reviewed","published"} for item in operations_scenarios),"byTrack":scenario_tracks},
     "publications":{"modulePdfsMachineValidated":machine_validated_pdfs,"commerciallyValidatedBooks":0},
     "platformVersions":{"declaredSupported":["SAP Commerce Cloud public cloud 2211"],"liveRuntimeVerified":[]},
     "sources":{"registered":len({source["id"] for source in sources}),"officialAuthoritativeExpanded":sum(source.get("authorityTier") == "official-authoritative" for source in sources)}

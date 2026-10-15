@@ -16,7 +16,8 @@ class OperationsSimulation:
             scenario = json.loads(path.read_text()); self.scenarios[scenario["id"]] = scenario
 
     def catalog(self):
-        return [{key: scenario[key] for key in ("id", "version", "title", "difficulty", "estimatedMinutes", "simulationLabel")} for scenario in self.scenarios.values()]
+        public_keys = ("id", "version", "title", "difficulty", "estimatedMinutes", "simulationLabel", "track", "moduleId")
+        return [{key: scenario[key] for key in public_keys if key in scenario} for scenario in self.scenarios.values()]
 
     def start(self, learner_id, scenario_id):
         scenario = self.scenarios.get(scenario_id)
@@ -24,7 +25,7 @@ class OperationsSimulation:
         state = deepcopy(scenario["initialState"])
         state.update({"investigations":[], "actions":[], "unsafeActions":[], "elapsedMinutes":0, "status":"active"})
         session_id = self.store.create_incident_session(learner_id, scenario_id, scenario["version"], state)
-        return {"sessionId":session_id, "scenarioId":scenario_id, "version":scenario["version"], "title":scenario["title"], "simulationLabel":scenario["simulationLabel"], "brief":scenario["brief"], "businessImpact":state["businessImpact"], "availableInvestigations":self._available(scenario, state, "investigations"), "availableActions":self._available(scenario, state, "actions")}
+        return {"sessionId":session_id, "scenarioId":scenario_id, "version":scenario["version"], "title":scenario["title"], "track":scenario.get("track", "operations-sre"), "moduleId":scenario.get("moduleId"), "simulationLabel":scenario["simulationLabel"], "brief":scenario["brief"], "businessImpact":state["businessImpact"], "availableInvestigations":self._available(scenario, state, "investigations"), "availableActions":self._available(scenario, state, "actions")}
 
     def _available(self, scenario, state, section):
         done = set(state["investigations"] + state["actions"])
@@ -63,25 +64,32 @@ class OperationsSimulation:
         session, scenario = self._load(session_id, learner_id)
         if not session or session["status"] != "active": return {"error":"SESSION_NOT_ACTIVE"}
         state = session["state"]; text = str(response).lower(); tokens = set(re.findall(r"[a-z0-9]+", text))
-        required_evidence = set(scenario["scoring"]["requiredEvidence"]); evidence_ratio = len(required_evidence & set(state["investigations"])) / len(required_evidence)
-        concept_hits = [group for group in scenario["scoring"]["conceptGroups"] if set(group) & tokens]
-        diagnosis = len(concept_hits) / len(scenario["scoring"]["conceptGroups"])
-        safe_recovery = scenario["scoring"]["preferredRecovery"] in state["actions"]
-        verification = scenario["scoring"]["verificationAction"] in state["actions"]
-        escalation = scenario["scoring"]["escalationAction"] in state["actions"]
+        scoring = scenario["scoring"]
+        required_evidence = set(scoring["requiredEvidence"]); evidence_ratio = len(required_evidence & set(state["investigations"])) / len(required_evidence)
+        concept_hits = [group for group in scoring["conceptGroups"] if set(group) & tokens]
+        diagnosis = len(concept_hits) / len(scoring["conceptGroups"])
+        accepted_recoveries = scoring.get("acceptedRecoveries", [scoring["preferredRecovery"]])
+        safe_recovery = bool(set(accepted_recoveries) & set(state["actions"]))
+        verification = scoring["verificationAction"] in state["actions"]
+        escalation_action = scoring.get("escalationAction")
+        escalation = not escalation_action or escalation_action in state["actions"]
+        integrity_evidence = set(scoring.get("integrityEvidence", []))
+        integrity_score = 1.0 if not integrity_evidence or integrity_evidence <= set(state["investigations"]) else 0.0
+        communication_terms = set(scoring.get("communicationTerms", ["impact", "timeline", "owner"]))
+        improvement_terms = set(scoring.get("improvementTerms", ["rehearsal", "additive", "gate", "runbook", "alert"]))
         unsafe = bool(state["unsafeActions"])
         dimensions = {
             "triage": round(evidence_ratio,2), "diagnosis": round(diagnosis,2),
             "riskAssessment": 0.0 if unsafe else 1.0, "recoveryDecision": 1.0 if safe_recovery else 0.0,
-            "dataIntegrity": 1.0 if {"inspect-backup","inspect-schema-diff"} <= set(state["investigations"]) else 0.0,
+            "dataIntegrity": integrity_score,
             "escalation": 1.0 if escalation else 0.5, "recoveryVerification": 1.0 if verification else 0.0,
-            "communication": 1.0 if {"impact","timeline","owner"} & tokens else 0.5,
-            "rootCause": round(diagnosis,2), "improvementPlanning": 1.0 if {"rehearsal","additive","gate","runbook","alert"} & tokens else 0.0
+            "communication": 1.0 if communication_terms & tokens else 0.5,
+            "rootCause": round(diagnosis,2), "improvementPlanning": 1.0 if improvement_terms & tokens else 0.0
         }
         score = round(sum(dimensions.values()) / len(dimensions), 2)
-        passed = score >= scenario["scoring"]["passThreshold"] and safe_recovery and verification and not unsafe
+        passed = score >= scoring["passThreshold"] and safe_recovery and verification and not unsafe
         state["status"] = "completed"; state["finalResponse"] = response
-        result = {"sessionId":session_id, "score":score, "passed":passed, "dimensions":dimensions, "unsafeActions":state["unsafeActions"], "evidenceReviewed":state["investigations"], "actionsTaken":state["actions"], "referenceRootCause":scenario["solution"]["rootCause"], "recommendedRecovery":scenario["solution"]["recovery"], "feedback":"Expert pass requires evidence-led diagnosis, safe schema-compatible recovery, independent verification, and no prohibited action."}
+        result = {"sessionId":session_id, "score":score, "passed":passed, "dimensions":dimensions, "unsafeActions":state["unsafeActions"], "evidenceReviewed":state["investigations"], "actionsTaken":state["actions"], "referenceRootCause":scenario["solution"]["rootCause"], "recommendedRecovery":scenario["solution"]["recovery"], "feedback":scenario.get("feedback", "An expert pass requires evidence-led diagnosis, a bounded safe recovery, independent verification, and no prohibited action.")}
         competency_scores = {competency:score for competency in scenario["competencyIds"]}
         self.store.update_incident(session_id, state, "conclusion", "submit-conclusion", {"response":response}, {"score":score,"passed":passed})
         self.store.complete_incident(session_id, competency_scores, result); return result
@@ -95,25 +103,11 @@ class OperationsSimulation:
             return {"mode":"post-incident-review","response":"Compare your event stream with the scored dimensions. The reference root cause was: " + result["referenceRootCause"],"citations":scenario["sourceIds"],"confidence":"deterministic-scenario-result","remediation":[key for key,value in result["dimensions"].items() if value < 0.8]}
         if "root cause" in message_text or "answer" in message_text or "solution" in message_text:
             response = "I will not reveal the reference solution during an active incident. State your current hypothesis, the evidence supporting it, and the observation that would disprove it."
-        elif "inspect-deployment-history" not in state["investigations"]:
-            response = "Start by establishing chronology: which environment, deployment, build, commit, migration mode, start time, and failure time define this incident?"
-        elif "inspect-error-logs" not in state["investigations"]:
-            response = "You have a deployment boundary. Which time-bounded, correlated log evidence would distinguish the first migration failure from later startup symptoms?"
-        elif "inspect-api-metrics" not in state["investigations"]:
-            response = "Test competing causes with metrics. Did JVM, database, dependency, or API indicators deteriorate before the activation failure?"
-        elif "inspect-schema-diff" not in state["investigations"]:
-            response = "Before proposing rollback, identify which persistent changes completed and what evidence establishes old-build compatibility."
-        elif "inspect-backup" not in state["investigations"] or "inspect-business-transactions" not in state["investigations"]:
-            response = "Recovery affects more than application health. Establish backup scope and the external transaction divergence window."
-        elif "freeze-deployments" not in state["actions"]:
-            response = "Your evidence is sufficient to contain change risk. Who owns incident command, and should further deployments remain possible while recovery is selected?"
-        elif "redeploy-corrected-migrate" not in state["actions"] and "restore-predeploy-backup" not in state["actions"]:
-            response = "Defend a recovery choice against schema compatibility, RPO/RTO, media/search scope, and payment/order reconciliation."
-        elif "validate-recovery" not in state["actions"]:
-            response = "A started application is not yet a recovered commerce service. Define independent technical and business acceptance checks."
         else:
-            response = "Prepare your conclusion: timeline, impact, cause with uncertainty, safe recovery rationale, integrity checks, escalation, and systemic prevention."
-        result = {"mode":"active-incident-coaching","response":response,"citations":["RS-SAP-DEPLOY-ROLLBACK","RS-SAP-ENV-LOGS","lesson:OPS-D03-M01"],"confidence":"grounded-scenario-guidance","uncertainty":"Simulation coaching distinguishes documented product boundaries from synthetic scenario behavior."}
+            completed = set(state["investigations"] + state["actions"])
+            prompt = next((item["prompt"] for item in scenario["tutor"]["sequence"] if item["until"] not in completed), None)
+            response = prompt or scenario["tutor"]["conclusionPrompt"]
+        result = {"mode":"active-incident-coaching","response":response,"citations":scenario["tutor"]["citations"],"confidence":"grounded-scenario-guidance","uncertainty":scenario["tutor"]["uncertainty"]}
         self.store.update_incident(session_id, state, "tutor", "coach", {"message":str(message)[:2000]}, result); return result
 
     def reset(self, learner_id, session_id):

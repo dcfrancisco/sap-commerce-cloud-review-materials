@@ -57,8 +57,8 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/": return self._send((ROOT / "academy" / "index.html").read_text(), content_type="text/html; charset=utf-8")
         if path == "/api/course": return self._send(load_json("content/course.json"))
         if path == "/api/incidents": return self._send({"labs": INCIDENTS.catalog()})
-        if path == "/api/operations/scenarios": return self._send({"scenarios": OPERATIONS.catalog()})
-        if path == "/api/operations/progress": return self._send(OPERATIONS.store.incident_history(query.get("learnerId", ["local"])[0]))
+        if path in {"/api/scenarios", "/api/operations/scenarios"}: return self._send({"scenarios": OPERATIONS.catalog()})
+        if path in {"/api/scenarios/progress", "/api/operations/progress"}: return self._send(OPERATIONS.store.incident_history(query.get("learnerId", ["local"])[0]))
         if path == "/api/practice/exercises": return self._send({"exercises":PRACTICE.catalog()})
         if path == "/api/practice/progress": return self._send(PRACTICE.store.practice_history(query.get("learnerId", ["local"])[0]))
         if path.startswith("/api/module/"):
@@ -93,19 +93,19 @@ class Handler(BaseHTTPRequestHandler):
             result = INCIDENTS.evidence(body.get("labId"), int(body.get("stage", 1))); return self._send(result or {"error":"LAB_NOT_FOUND"}, 200 if result else 404)
         if path == "/api/incidents/submit":
             result = INCIDENTS.grade(body.get("labId"), body.get("response", "")); return self._send(result or {"error":"LAB_NOT_FOUND"}, 200 if result else 404)
-        if path == "/api/operations/start":
+        if path in {"/api/scenarios/start", "/api/operations/start"}:
             result = OPERATIONS.start(learner_id, body.get("scenarioId")); return self._send(result or {"error":"SCENARIO_NOT_FOUND"}, 201 if result else 404)
-        if path == "/api/operations/investigate":
+        if path in {"/api/scenarios/investigate", "/api/operations/investigate"}:
             result = OPERATIONS.investigate(learner_id, body.get("sessionId"), body.get("investigationId")); return self._send(result, 400 if result.get("error") else 200)
-        if path == "/api/operations/action":
+        if path in {"/api/scenarios/action", "/api/operations/action"}:
             result = OPERATIONS.act(learner_id, body.get("sessionId"), body.get("actionId")); return self._send(result, 400 if result.get("error") else 200)
-        if path == "/api/operations/conclude":
+        if path in {"/api/scenarios/conclude", "/api/operations/conclude"}:
             response = str(body.get("response", ""))
             if len(response) < 80 or len(response) > 12000: return self._send({"error":"INVALID_CONCLUSION_LENGTH"}, 400)
             result = OPERATIONS.conclude(learner_id, body.get("sessionId"), response); return self._send(result, 400 if result.get("error") else 200)
-        if path == "/api/operations/coach":
+        if path in {"/api/scenarios/coach", "/api/operations/coach"}:
             result = OPERATIONS.coach(learner_id, body.get("sessionId"), body.get("message", "")); return self._send(result, 400 if result.get("error") else 200)
-        if path == "/api/operations/reset":
+        if path in {"/api/scenarios/reset", "/api/operations/reset"}:
             deleted = OPERATIONS.reset(learner_id, body.get("sessionId")); return self._send({"reset":deleted}, 200 if deleted else 404)
         if path == "/api/practice/start":
             result = PRACTICE.start(learner_id, body.get("exerciseId"), body.get("seed", "default")); return self._send(result or {"error":"EXERCISE_NOT_FOUND"}, 201 if result else 404)

@@ -36,11 +36,11 @@ The validators report exact counts and refuse to call draft content validated. T
 - `academy/server.py`: local learner flow and API endpoints. Assessment delivery omits answers; submission returns explanation and records evidence in SQLite.
 - `academy/tutor.py`: provider-neutral grounded tutor MVP with local abstaining adapter.
 - `academy/incidents.py`: deterministic, staged incident tutor for storefront, administration, and cloud-operations scenarios.
-- `academy/operations.py`: stateful Operations/SRE simulation with progressive evidence, consequential actions, safety hard-fails, coaching, replay, and persisted competency evidence.
+- `academy/operations.py`: shared stateful ecosystem simulation with progressive evidence, consequential actions, safety hard-fails, coaching, replay, and persisted competency evidence.
 - `academy/practice.py`: seeded deep-practice sessions with protected solutions, progressive hints, deterministic rubric dimensions, assisted/independent evidence, and no variant-count inflation.
 - `academy/simulation.py`: clearly labeled SAP Commerce learning simulation.
 - `scripts/validate_content.py`: content and assessment QA.
 
-The Operations/SRE specialization adds a 12-domain, 60-module roadmap; nine role paths; a formal managed-platform responsibility matrix; one implemented-review-required failed-deployment module; one tested stateful incident; a ten-exercise deep-practice family; six operations competencies; and ten internally validated assessment records. Seeded practice variants are deliberately excluded from asset counts. Its 2,500-item and 150-incident targets remain future work.
+The Operations/SRE specialization adds a 12-domain, 60-module roadmap; nine role paths; a formal managed-platform responsibility matrix; one implemented-review-required failed-deployment module; a ten-exercise deep-practice family; six operations competencies; and ten internally validated assessment records. The shared runtime now contains three tested stateful incidents: one storefront, one Backoffice administration, and one deployment/SRE scenario. Seeded practice variants are deliberately excluded from asset counts. The Operations/SRE specialization's 2,500-item and 150-incident targets remain future work.
 
 The simulations are not the SAP Commerce runtime. No Shopify, live SAP Commerce, Athena Hub, certification exam, or employer integration is claimed. The general corpus contains 36 validated assessment records and 20 competencies; these are verified implementation counts, not acceptance of the 1,200-item target. Commercial maturity remains **Engineering Alpha**.

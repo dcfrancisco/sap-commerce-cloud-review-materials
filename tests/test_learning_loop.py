@@ -29,6 +29,7 @@ class LearningLoopTests(unittest.TestCase):
             self.assertEqual(attempt_id, 1)
             self.assertEqual(summary["attempts"][0]["passed"], 1)
             self.assertEqual(summary["competencies"][0]["competency_id"], "C-ARCH-001")
+            store.db.close()
 
     def test_tutor_abstains_when_not_grounded(self):
         tutor = GroundedTutor(ROOT)
