@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "competency.v1",
+  "competencies": [
+    {"id":"C-ARCH-001","moduleId":"M01","title":"Explain commerce platform boundaries","description":"Distinguish platform responsibilities, extension code, external systems, and the learning simulation.","prerequisites":[],"level":"understanding","assessmentMethods":["short-answer","architecture-decision","diagnostic"],"masteryThreshold":{"minimumScore":0.8,"minimumEvidence":2},"status":"published","version":"1.0"},
+    {"id":"C-ARCH-002","moduleId":"M01","title":"Trace a product request through layers","description":"Reason about a request crossing API, facade, service, persistence, and external integration boundaries.","prerequisites":["C-ARCH-001"],"level":"application","assessmentMethods":["code-interpretation","incident-investigation","lab"],"masteryThreshold":{"minimumScore":0.8,"minimumEvidence":2},"status":"published","version":"1.0"},
+    {"id":"C-ARCH-003","moduleId":"M01","title":"Make auditable architecture trade-offs","description":"Defend a boundary choice using failure modes, ownership, evidence, and explicit uncertainty.","prerequisites":["C-ARCH-001"],"level":"advanced-engineering","assessmentMethods":["architecture-decision","case-study"],"masteryThreshold":{"minimumScore":0.75,"minimumEvidence":2},"status":"published","version":"1.0"}
+  ]
+}

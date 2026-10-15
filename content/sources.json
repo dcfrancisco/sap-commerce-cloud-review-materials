@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "source.v1",
+  "sources": [
+    {"id":"SAP-LEARN-JOURNEY-IMPLEMENT","title":"Implementing SAP Commerce Cloud","publisher":"SAP","url":"https://learning.sap.com/learning-journeys/implementing-sap-commerce-cloud","applicability":"SAP Commerce Cloud learning journey; retrieved 2026-10-16","topics":["architecture","configuration","development","cloud","storefront","search","web services"],"verification":"verified-page-metadata","status":"verified"},
+    {"id":"SAP-LEARN-TECH-ESSENTIALS","title":"Exploring the Technical Essentials of SAP Commerce Cloud","publisher":"SAP","url":"https://learning.sap.com/courses/exploring-the-technical-essentials-of-sap-commerce-cloud","applicability":"SAP Commerce Cloud course; retrieved 2026-10-16","topics":["configuration","backoffice","data modeling","product modeling","ImpEx","FlexibleSearch","services","facades"],"verification":"verified-page-metadata","status":"verified"},
+    {"id":"SAP-HELP-COMMERCE-PUBLIC","title":"SAP Commerce Cloud Public Cloud documentation","publisher":"SAP Help Portal","url":"https://help.sap.com/docs/r/product/SAP_COMMERCE_CLOUD_PUBLIC_CLOUD/LATEST/en-US","applicability":"Latest public-cloud documentation link; page content requires interactive portal access","topics":["platform documentation"],"verification":"url-verified-content-unavailable","status":"research-gap"},
+    {"id":"SAP-HELP-COMPOSABLE","title":"SAP Commerce Composable Storefront documentation","publisher":"SAP Help Portal","url":"https://help.sap.com/docs/SAP_COMMERCE_COMPOSABLE_STOREFRONT","applicability":"Composable Storefront documentation link; page content requires interactive portal access","topics":["storefront","headless"],"verification":"url-verified-content-unavailable","status":"research-gap"}
+  ]
+}

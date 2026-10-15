@@ -1,0 +1,16 @@
+{
+  "schemaVersion":"lab.v1",
+  "id":"LAB-M01-CATALOG-TRACE",
+  "moduleId":"M01",
+  "title":"Trace a Catalog Read Across a Projection Boundary",
+  "mode":"simulation",
+  "simulationLabel":"SAP Commerce learning simulation; not SAP Commerce runtime",
+  "objective":"Diagnose whether a product read failure is caused by missing source data or stale projection data.",
+  "prerequisites":["C-ARCH-001"],
+  "steps":["Fetch P100","Inject stale projection","Fetch P100 again","Compare timestamps and diagnostics","Write incident decision"],
+  "acceptanceCriteria":["Uses correlationId as evidence","Distinguishes sourceUpdatedAt from projectionUpdatedAt","Names the failing boundary","Proposes bounded remediation","Does not claim simulation behavior is platform behavior"],
+  "failureCases":["unknown product returns 404","malformed scenario returns 400","reset restores baseline"],
+  "cleanup":"POST /api/simulation/reset",
+  "referenceSolution":"The source remains present and current while projectionUpdatedAt is intentionally older; the projection boundary is stale. Reconcile/replay the projection with an idempotent operation and verify both read paths.",
+  "competencies":["C-ARCH-001","C-ARCH-002","C-ARCH-003"]
+}

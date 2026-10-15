@@ -1,0 +1,26 @@
+__pycache__/
+*.pyc
+
+# Local Python environments and tooling
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Generated publication and build output
+dist/
+build/
+*.egg-info/
+
+# Local runtime state and editor files
+.env
+.env.*
+!.env.example
+.vscode/
+.idea/
+.DS_Store
