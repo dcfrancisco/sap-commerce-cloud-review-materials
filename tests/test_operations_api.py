@@ -9,6 +9,7 @@ from pathlib import Path
 
 import academy.server as server_module
 from academy.operations import OperationsSimulation
+from academy.practice import PracticeEngine
 from academy.store import ProgressStore
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -21,6 +22,7 @@ class OperationsApiTests(unittest.TestCase):
         cls.store = ProgressStore(Path(cls.temp.name) / "api.sqlite3")
         server_module.STORE = cls.store
         server_module.OPERATIONS = OperationsSimulation(cls.store, ROOT)
+        server_module.PRACTICE = PracticeEngine(cls.store, ROOT)
         cls.server = HTTPServer(("127.0.0.1", 0), server_module.Handler)
         cls.thread = threading.Thread(target=cls.server.serve_forever, daemon=True); cls.thread.start()
         cls.base = f"http://127.0.0.1:{cls.server.server_port}"
@@ -56,6 +58,18 @@ class OperationsApiTests(unittest.TestCase):
         _, started = self.call("/api/operations/start", {"learnerId":"api-safe","scenarioId":"OPS-INC-001"})
         status, body = self.call("/api/operations/conclude", {"learnerId":"api-safe","sessionId":started["sessionId"],"response":"too short"})
         self.assertEqual(status, 400); self.assertEqual(body["error"], "INVALID_CONCLUSION_LENGTH")
+
+    def test_practice_api_withholds_solution_and_releases_it_after_submission(self):
+        status, catalog = self.call("/api/practice/exercises")
+        self.assertEqual(status, 200); self.assertEqual(len(catalog["exercises"]), 10)
+        status, started = self.call("/api/practice/start", {"learnerId":"practice-api","exerciseId":"OPS-EX-D03-002","seed":"api-seed"})
+        self.assertEqual(status, 201); self.assertNotIn("referenceSolution", started["exercise"]); self.assertNotIn("hints", started["exercise"])
+        status, hint = self.call("/api/practice/hint", {"learnerId":"practice-api","sessionId":started["sessionId"]})
+        self.assertEqual(status, 200); self.assertEqual(hint["level"], 1)
+        variant = started["variant"]
+        response = f"Use schema compatibility migration and rollback evidence. Backup age {variant['backup']['ageMinutes']} and {variant['traffic']['businessWindow']} determine RPO RTO. Verify media search index health acceptance tests. Reconcile payment ERP order effects. Escalate managed support with logs timeline correlation records and validation evidence."
+        status, result = self.call("/api/practice/submit", {"learnerId":"practice-api","sessionId":started["sessionId"],"response":response})
+        self.assertEqual(status, 200); self.assertTrue(result["passed"], result); self.assertIn("referenceSolution", result)
 
 
 if __name__ == "__main__": unittest.main()

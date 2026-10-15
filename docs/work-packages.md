@@ -19,6 +19,7 @@
 | OPS-WP-02 failed-deployment reference unit | implemented/review required | substantial manual, ten assessments, six competencies and one stateful scenario |
 | OPS-WP-03 operations simulation runtime | Engineering Alpha | progressive evidence, consequential actions, safety hard-fail, coaching, persistence, reset/replay and API |
 | OPS-WP-04 commercial gates | active | machine-readable A-H gate status; no commercial eligibility; all human reviews pending |
+| OPS-WP-05 deep exercise production | Engineering Alpha | ten distinct exercise modes, seeded variants, progressive hints, protected solutions, persisted evidence, exact-count reporting and regression tests |
 
 ## Next execution order
 

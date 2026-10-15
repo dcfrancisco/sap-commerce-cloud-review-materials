@@ -32,5 +32,5 @@
       {"id":"OPS-D12-M01","title":"Failure Isolation and Graceful Degradation","status":"planned"},{"id":"OPS-D12-M02","title":"Workload Protection and Concurrency","status":"planned"},{"id":"OPS-D12-M03","title":"Distributed State and Transaction Correctness","status":"planned"},{"id":"OPS-D12-M04","title":"Upgrade, Chaos, and Resilience Experiments","status":"planned"},{"id":"OPS-D12-M05","title":"Reliability Governance and Business Continuity","status":"planned"}]}
   ],
   "targets":{"modules":60,"exercisesAndLabs":300,"validatedAssessmentItems":2500,"incidentScenarios":150,"runbookExercises":100,"architectureCases":50,"advancedRecoverySimulations":30,"referenceVolumes":12},
-  "actual":{"implementedReviewRequiredModules":1,"completeModules":0,"testedIncidentScenarios":1,"humanTechnicalReviews":0,"humanEditorialReviews":0}
+  "actual":{"implementedReviewRequiredModules":1,"completeModules":0,"machineValidatedExercises":10,"testedIncidentScenarios":1,"humanTechnicalReviews":0,"humanEditorialReviews":0}
 }

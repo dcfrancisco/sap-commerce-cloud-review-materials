@@ -4,6 +4,7 @@
   "version":"1.0.0",
   "title":"Failed Migrate-Data Deployment with Schema Compatibility Risk",
   "difficulty":"advanced",
+  "reviewStatus":"implemented-machine-validated",
   "estimatedMinutes":45,
   "simulationLabel":"Deterministic synthetic evidence based on documented SAP Commerce Cloud operational boundaries; no live environment is accessed.",
   "applicability":{"product":"SAP Commerce Cloud, public cloud","version":"2211","verifiedOn":"2026-10-16"},

@@ -21,8 +21,10 @@ gates = load("content/operations/release-gates.json")
 coverage = load("content/operations/source-coverage.json")
 scenario = load("content/operations/scenarios/ops-inc-001.json")
 assessment = load("content/operations/assessments/ops-d03-m01.json")
+exercise_families = [load(str(path.relative_to(ROOT))) for path in sorted((ROOT / "content/operations/exercises").glob("*.json"))]
 sources = load("content/research/source-registry.json")
 foundational_sources = load("content/sources.json")
+exercise_schema = load("content/schemas/operations-exercise-family.schema.json")
 
 domains = course.get("domains", []); modules = [module for domain in domains for module in domain.get("modules", [])]
 module_ids = {module.get("id") for module in modules}; competency_ids = {item.get("id") for item in competencies.get("competencies", [])}; source_ids = {item.get("id") for item in sources.get("sources", []) + foundational_sources.get("sources", [])}
@@ -83,12 +85,37 @@ for item in items:
         if source_id not in source_ids: errors.append(f"{item.get('id')}: unknown source {source_id}")
 if len(items) != 10: errors.append(f"expected 10 reference items, found {len(items)}")
 
+exercise_ids = set(); exercise_prompts = []; exercises = []
+exercise_required = {"id","moduleId","version","title","type","difficulty","estimatedMinutes","competencyIds","objective","initialState","prompt","constraints","deliverable","acceptanceCriteria","hints","evaluation","referenceSolution","sourceIds","reviewStatus"}
+for family in exercise_families:
+    if family.get("schemaVersion") != "operations-exercise-family.v1": errors.append(f"{family.get('id')}: invalid exercise-family schema")
+    if len(family.get("variantDimensions", {})) < 2: errors.append(f"{family.get('id')}: insufficient variant dimensions")
+    if "not independent published assets" not in family.get("variantPolicy", ""): errors.append(f"{family.get('id')}: variant counting policy missing")
+    for exercise in family.get("exercises", []):
+        exercises.append(exercise); missing = exercise_required - set(exercise)
+        if missing: errors.append(f"{exercise.get('id')}: missing {sorted(missing)}")
+        if exercise.get("id") in exercise_ids: errors.append(f"duplicate exercise {exercise.get('id')}")
+        exercise_ids.add(exercise.get("id")); exercise_prompts.append((exercise.get("id"), set(re.findall(r"[a-z0-9]+", exercise.get("prompt", "").lower()))))
+        if exercise.get("moduleId") not in module_ids: errors.append(f"{exercise.get('id')}: unknown module")
+        if len(exercise.get("acceptanceCriteria", [])) < 4 or len(exercise.get("hints", [])) < 2: errors.append(f"{exercise.get('id')}: exercise depth insufficient")
+        if exercise.get("reviewStatus") == "published": errors.append(f"{exercise.get('id')}: cannot be published without recorded human review")
+        for competency_id in exercise.get("competencyIds", []):
+            if competency_id not in competency_ids: errors.append(f"{exercise.get('id')}: unknown competency {competency_id}")
+        for source_id in exercise.get("sourceIds", []):
+            if source_id not in source_ids: errors.append(f"{exercise.get('id')}: unknown source {source_id}")
+for index,(left_id,left) in enumerate(exercise_prompts):
+    for right_id,right in exercise_prompts[index+1:]:
+        similarity = len(left & right) / max(1, len(left | right))
+        if similarity >= 0.8: errors.append(f"near-duplicate exercise prompts: {left_id}, {right_id} ({similarity:.2f})")
+if exercise_schema.get("$id") != "academy://schemas/operations-exercise-family.v1": errors.append("exercise-family JSON schema missing or invalid")
+if course.get("actual", {}).get("machineValidatedExercises") != len([item for item in exercises if item.get("reviewStatus") == "implemented-machine-validated"]): errors.append("course actual exercise count drift")
+
 gate_statuses = {gate.get("status") for gate in gates.get("gates", [])}
 if gates.get("commercialReleaseEligible") is not False or "fail" not in gate_statuses: errors.append("alpha release gates must not imply commercial eligibility")
 if gates.get("humanReviews", {}).get("sapTechnical") != "pending": errors.append("human SAP review must remain pending")
 
 print(f"operations curriculum: {len(domains)} domains, {len(modules)} modules; implemented-review-required={sum(m.get('status') == 'implemented-review-required' for m in modules)}, complete={sum(m.get('status') == 'complete' for m in modules)}")
-print(f"operations assets: roles={len(roles.get('roles', []))}, competencies={len(competency_ids)}, scenarios=1, assessment-items={len(items)}, publications-planned={len(publications.get('volumes', []))}")
+print(f"operations assets: roles={len(roles.get('roles', []))}, competencies={len(competency_ids)}, scenarios=1, exercises={len(exercises)}, assessment-items={len(items)}, publications-planned={len(publications.get('volumes', []))}")
 print("commercial gates: " + ", ".join(f"{gate['id']}={gate['status']}" for gate in gates.get("gates", [])))
 if errors:
     print("OPERATIONS QA FAILED\n" + "\n".join(f"- {error}" for error in errors)); sys.exit(1)

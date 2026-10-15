@@ -6,6 +6,7 @@ from urllib.parse import parse_qs, urlparse
 from .evaluator import evaluate
 from .incidents import IncidentTutor
 from .operations import OperationsSimulation
+from .practice import PracticeEngine
 from .store import ProgressStore
 from .tutor import GroundedTutor
 
@@ -14,6 +15,7 @@ STORE = ProgressStore()
 TUTOR = GroundedTutor(ROOT)
 INCIDENTS = IncidentTutor(ROOT)
 OPERATIONS = OperationsSimulation(STORE, ROOT)
+PRACTICE = PracticeEngine(STORE, ROOT)
 SIMULATION = None
 
 
@@ -57,6 +59,8 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/incidents": return self._send({"labs": INCIDENTS.catalog()})
         if path == "/api/operations/scenarios": return self._send({"scenarios": OPERATIONS.catalog()})
         if path == "/api/operations/progress": return self._send(OPERATIONS.store.incident_history(query.get("learnerId", ["local"])[0]))
+        if path == "/api/practice/exercises": return self._send({"exercises":PRACTICE.catalog()})
+        if path == "/api/practice/progress": return self._send(PRACTICE.store.practice_history(query.get("learnerId", ["local"])[0]))
         if path.startswith("/api/module/"):
             module_id = path.rsplit("/", 1)[-1].upper(); document = module_document(module_id)
             if not document: return self._send({"error":"MODULE_NOT_FOUND"}, 404)
@@ -103,6 +107,14 @@ class Handler(BaseHTTPRequestHandler):
             result = OPERATIONS.coach(learner_id, body.get("sessionId"), body.get("message", "")); return self._send(result, 400 if result.get("error") else 200)
         if path == "/api/operations/reset":
             deleted = OPERATIONS.reset(learner_id, body.get("sessionId")); return self._send({"reset":deleted}, 200 if deleted else 404)
+        if path == "/api/practice/start":
+            result = PRACTICE.start(learner_id, body.get("exerciseId"), body.get("seed", "default")); return self._send(result or {"error":"EXERCISE_NOT_FOUND"}, 201 if result else 404)
+        if path == "/api/practice/hint":
+            result = PRACTICE.hint(learner_id, body.get("sessionId")); return self._send(result, 400 if result.get("error") else 200)
+        if path == "/api/practice/submit":
+            response = str(body.get("response", ""))
+            if len(response) < 80 or len(response) > 12000: return self._send({"error":"INVALID_PRACTICE_RESPONSE_LENGTH"}, 400)
+            result = PRACTICE.submit(learner_id, body.get("sessionId"), response); return self._send(result, 400 if result.get("error") else 200)
         if path == "/api/simulation/scenarios/stale-projection": SIMULATION.stale(); return self._send({"status":"scenario-applied", "scenario":"stale-projection", "simulationOnly":True})
         if path == "/api/simulation/reset": SIMULATION.reset(); return self._send({"status":"reset", "simulationOnly":True})
         return self._send({"error":"NOT_FOUND"}, 404)

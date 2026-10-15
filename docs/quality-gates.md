@@ -5,9 +5,9 @@ Release labels are evidence summaries, not declarations of expert approval. Auto
 | Gate | Current evidence | Result |
 | --- | --- | --- |
 | A Technical accuracy | 54 governed sources; versioned operational claims; 27/27 general mappings; 60/60 Operations/SRE roadmap mappings; contradiction register | PARTIAL: independent SAP SME and live-runtime validation absent |
-| B Educational quality | Outcomes, substantial reference manual, guided/independent work, ten assessments, six competencies, deterministic remediation dimensions | PARTIAL: instructional-design and learner reviews absent |
+| B Educational quality | Outcomes, substantial reference manual, ten-mode exercise family, progressive hints, assisted/independent evidence, ten assessments, six competencies, deterministic remediation dimensions | PARTIAL: instructional-design and learner reviews absent |
 | C Content completeness | Eight general modules and one Operations/SRE module authored | FAIL: 59 Operations/SRE modules and most academy modules remain |
-| D Software correctness | Eighteen unit/integration tests at this checkpoint, including ephemeral-port API tests, state transitions, persistence, leakage and unsafe-action checks | PARTIAL: browser, load, concurrency and wider contract coverage absent |
+| D Software correctness | Unit/integration coverage includes ephemeral-port API tests, seeded reproducibility, progressive hints, persistence, leakage, state transitions and unsafe-action hard-fails | PARTIAL: browser, load, concurrency and wider contract coverage absent |
 | E Security and privacy | Answers withheld; request size/identifier checks; synthetic fixtures; no learner-code execution | FAIL: authentication, authorization, CSRF, rate limiting, tenant isolation and security review absent |
 | F Editorial/publication | Nine reproducible module PDFs; structure/page metadata checks; representative render inspection | PARTIAL: PDF is untagged; professional editorial/accessibility review and final visual identity absent |
 | G Operational readiness | Local setup, reset, deterministic replay, source and gate validators | FAIL: production packaging, observability, upgrade support and support runbooks absent |
