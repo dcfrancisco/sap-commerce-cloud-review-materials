@@ -1,0 +1,15 @@
+{
+  "schemaVersion":"operations-responsibility.v1",
+  "applicability":"SAP Commerce Cloud, public cloud 2211; verify against current subscription and release documentation",
+  "categories":[
+    {"id":"customer-configuration","owner":"Customer","examples":["Cloud Portal environment properties","approved endpoints","maintenance pages","release selections"],"boundary":"Use exposed supported controls and change governance."},
+    {"id":"customer-application","owner":"Customer","examples":["custom extensions","items.xml changes","integration code","application logging"],"boundary":"Customer owns correctness, testing, compatibility, and rollback design."},
+    {"id":"customer-administration","owner":"Customer-authorized roles","examples":["build/deployment initiation","log access","supported backup/restore initiation","Backoffice operations"],"boundary":"Role, environment, and production approvals apply."},
+    {"id":"sap-managed-infrastructure","owner":"SAP","examples":["Kubernetes control plane and upgrades","database infrastructure and patching","managed service availability"],"boundary":"Do not teach direct cluster, host, or provider-account administration."},
+    {"id":"third-party-service","owner":"Contract-dependent","examples":["payment provider","identity provider","tax service","ERP endpoint"],"boundary":"Responsibility and escalation depend on the service contract."},
+    {"id":"shared","owner":"Customer and SAP or provider","examples":["release recovery","security incident response","capacity evidence","service-level investigation"],"boundary":"Customer preserves application evidence; managed-service teams act within support boundaries."},
+    {"id":"sap-support-required","owner":"SAP Support","examples":["direct database modification","managed infrastructure intervention","manual database recovery outside exposed workflow"],"boundary":"Submit a support incident with impact, timeline, build, environment, errors, and requested outcome."}
+  ],
+  "historicalTrack":{"id":"on-premise-hybris","status":"separate-planned-track","warning":"On-premise host, database, Solr, and cluster administration capabilities must not be generalized to SAP Commerce Cloud public cloud."},
+  "sourceIds":["RS-SAP-CLOUD-PORTAL","RS-SAP-DATABASE-SERVICES","RS-SAP-CLUSTER-UPGRADE","RS-SAP-DEPLOY-ROLLBACK"]
+}

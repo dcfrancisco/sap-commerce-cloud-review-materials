@@ -1,18 +1,20 @@
-# Commercial quality gates
+# Commercial quality gates — Engineering Alpha
 
-Release labels are evidence summaries, not declarations of expert approval. Automated checks are identified as machine validation. No independent human technical/editorial review has yet occurred.
+Release labels are evidence summaries, not declarations of expert approval. Automated checks are machine validation only. Independent SAP technical, security, professional editorial, and learner-acceptance reviews remain pending.
 
-| Gate | Acceptance criteria | Current evidence | Result |
-| --- | --- | --- | --- |
-| A Technical accuracy | Versioned SAP claims, three applicable official sources per completed module, contradiction register | Source registry, coverage matrix, research validator | PARTIAL PASS: M01–M05 only |
-| B Educational quality | Objectives, worked examples, exercises, rubrics and remediation align | M01–M05 content and 24 items | PARTIAL; expert curriculum review missing |
-| C Content completeness | Substantial lessons, labs, assessments, source coverage | 5 of 24 modules complete under current minimum checks | FAIL for academy release |
-| D Software correctness | Unit, persistence, assessment, tutor and learner-flow tests | Automated suite plus HTTP smoke evidence | PARTIAL PASS; broader API/E2E tests required |
-| E Security and privacy | Protected answers, validated inputs, learner-data policy, provider-secret handling | Answers withheld until submission; local SQLite separation | FAIL: authentication, authorization and security test suite incomplete |
-| F Editorial/publication | Structural, accessibility, visual and technical editorial review | Five PDFs generated; automated existence/page QA | FAIL: visual/editorial review not complete |
-| G Operational readiness | install/configure/diagnose/recover/support | README local run instructions | FAIL |
-| H Product acceptance | representative learners complete and evaluate meaningful journeys | no independent learner study | FAIL |
+| Gate | Current evidence | Result |
+| --- | --- | --- |
+| A Technical accuracy | 54 governed sources; versioned operational claims; 27/27 general mappings; 60/60 Operations/SRE roadmap mappings; contradiction register | PARTIAL: independent SAP SME and live-runtime validation absent |
+| B Educational quality | Outcomes, substantial reference manual, guided/independent work, ten assessments, six competencies, deterministic remediation dimensions | PARTIAL: instructional-design and learner reviews absent |
+| C Content completeness | Eight general modules and one Operations/SRE module authored | FAIL: 59 Operations/SRE modules and most academy modules remain |
+| D Software correctness | Eighteen unit/integration tests at this checkpoint, including ephemeral-port API tests, state transitions, persistence, leakage and unsafe-action checks | PARTIAL: browser, load, concurrency and wider contract coverage absent |
+| E Security and privacy | Answers withheld; request size/identifier checks; synthetic fixtures; no learner-code execution | FAIL: authentication, authorization, CSRF, rate limiting, tenant isolation and security review absent |
+| F Editorial/publication | Nine reproducible module PDFs; structure/page metadata checks; representative render inspection | PARTIAL: PDF is untagged; professional editorial/accessibility review and final visual identity absent |
+| G Operational readiness | Local setup, reset, deterministic replay, source and gate validators | FAIL: production packaging, observability, upgrade support and support runbooks absent |
+| H Product acceptance | Automated end-to-end API learning-cycle evidence | FAIL: no observed representative learner acceptance or human sign-off |
 
-## Reference-module promotion criteria
+The machine-readable Operations/SRE result is maintained in `content/operations/release-gates.json`. Commercial release is prohibited while any required gate is partial or failed.
 
-M01 may be promoted to the commercial reference module only when it has a full technical review, editorial review, rendered-page inspection, verified runnable examples or explicit runtime gaps, a complete exercise family, security/performance coverage, and end-to-end learner evidence. Its current metadata remains an implementation milestone, not commercial publication approval.
+## Reference-unit promotion criteria
+
+OPS-D03-M01 may become the specialization reference module only after independent SAP technical review, professional editorial review, accessibility review, live-version verification or explicit unexecuted boundaries, observed learner completion, and remediation of material findings. Its current status is `implemented-review-required`.

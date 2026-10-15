@@ -1,0 +1,14 @@
+{
+  "schemaVersion":"operations-module-dependency.v1",
+  "edges":[
+    {"from":"OPS-D01-M01","to":"OPS-D02-M01","reason":"responsibility precedes administration"},
+    {"from":"OPS-D01-M03","to":"OPS-D03-M01","reason":"startup evidence precedes deployment recovery"},
+    {"from":"OPS-D02-M02","to":"OPS-D03-M01","reason":"environment context precedes deployment decisions"},
+    {"from":"OPS-D04-M01","to":"OPS-D03-M01","reason":"log correlation supports root-cause localization"},
+    {"from":"OPS-D03-M01","to":"OPS-D03-M03","reason":"incident introduces schema compatibility"},
+    {"from":"OPS-D03-M01","to":"OPS-D11-M03","reason":"deployment incident demonstrates hypothesis-driven investigation"},
+    {"from":"OPS-D10-M02","to":"OPS-D10-M03","reason":"verified backup precedes restore"},
+    {"from":"OPS-D11-M03","to":"OPS-D11-M05","reason":"evidence and mitigation precede RCA"},
+    {"from":"OPS-D05-M01","to":"OPS-D12-M05","reason":"measured reliability precedes governance"}
+  ]
+}

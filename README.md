@@ -17,6 +17,7 @@ Then open <http://127.0.0.1:8000>. The service uses only the Python standard lib
 ```bash
 python3 scripts/validate_content.py
 python3 scripts/validate_research.py
+python3 scripts/validate_operations.py
 python3 scripts/build_publication.py
 python3 scripts/validate_publication.py
 python3 -m unittest discover -s tests -v
@@ -34,7 +35,10 @@ The validators report exact counts and refuse to call draft content validated. T
 - `academy/server.py`: local learner flow and API endpoints. Assessment delivery omits answers; submission returns explanation and records evidence in SQLite.
 - `academy/tutor.py`: provider-neutral grounded tutor MVP with local abstaining adapter.
 - `academy/incidents.py`: deterministic, staged incident tutor for storefront, administration, and cloud-operations scenarios.
+- `academy/operations.py`: stateful Operations/SRE simulation with progressive evidence, consequential actions, safety hard-fails, coaching, replay, and persisted competency evidence.
 - `academy/simulation.py`: clearly labeled SAP Commerce learning simulation.
 - `scripts/validate_content.py`: content and assessment QA.
 
-The simulation is not the SAP Commerce runtime. No Shopify, live SAP Commerce, Athena Hub, certification exam, or employer integration is claimed. The current corpus contains 36 validated assessment records and 20 competencies; these are verified implementation counts, not acceptance of the 1,200-item target.
+The Operations/SRE specialization adds a 12-domain, 60-module roadmap; nine role paths; a formal managed-platform responsibility matrix; one implemented-review-required failed-deployment module; one tested stateful incident; six operations competencies; and ten internally validated assessment records. Its 2,500-item and 150-incident targets remain future work.
+
+The simulations are not the SAP Commerce runtime. No Shopify, live SAP Commerce, Athena Hub, certification exam, or employer integration is claimed. The general corpus contains 36 validated assessment records and 20 competencies; these are verified implementation counts, not acceptance of the 1,200-item target. Commercial maturity remains **Engineering Alpha**.

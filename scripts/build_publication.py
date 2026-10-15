@@ -5,7 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"; DIST.mkdir(exist_ok=True)
-modules = sorted((ROOT / "content/modules").glob("*.md"))
+modules = sorted(list((ROOT / "content/modules").glob("*.md")) + list((ROOT / "content/operations/modules").glob("*.md")))
 if not modules: raise SystemExit("no module sources")
 for source in modules:
     stem = source.stem

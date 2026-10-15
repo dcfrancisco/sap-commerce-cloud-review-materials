@@ -1,0 +1,15 @@
+{
+  "schemaVersion":"operations-role-path.v1",
+  "diagnosticBypassPolicy":"A prerequisite may be bypassed only with retained assessment or scenario evidence at the required level; lesson views do not count.",
+  "roles":[
+    {"id":"cloud-administrator","title":"SAP Commerce Cloud Administrator","targetLevel":4,"requiredDomains":["OPS-D01","OPS-D02","OPS-D03","OPS-D07","OPS-D09","OPS-D11"],"scenarioThreshold":{"minimumPassed":8,"maximumCriticalUnsafeActions":0}},
+    {"id":"production-support","title":"SAP Commerce Production Support Engineer","targetLevel":4,"requiredDomains":["OPS-D01","OPS-D04","OPS-D06","OPS-D07","OPS-D08","OPS-D11"],"scenarioThreshold":{"minimumPassed":12,"maximumCriticalUnsafeActions":0}},
+    {"id":"devops-engineer","title":"SAP Commerce DevOps Engineer","targetLevel":4,"requiredDomains":["OPS-D02","OPS-D03","OPS-D04","OPS-D09","OPS-D10","OPS-D11"],"scenarioThreshold":{"minimumPassed":12,"maximumCriticalUnsafeActions":0}},
+    {"id":"cloud-operations","title":"SAP Commerce Cloud Operations Engineer","targetLevel":4,"requiredDomains":["OPS-D01","OPS-D02","OPS-D03","OPS-D04","OPS-D07","OPS-D08","OPS-D10","OPS-D11"],"scenarioThreshold":{"minimumPassed":15,"maximumCriticalUnsafeActions":0}},
+    {"id":"sre","title":"SAP Commerce SRE","targetLevel":5,"requiredDomains":["OPS-D01","OPS-D03","OPS-D04","OPS-D05","OPS-D06","OPS-D08","OPS-D10","OPS-D11","OPS-D12"],"scenarioThreshold":{"minimumPassed":20,"maximumCriticalUnsafeActions":0,"humanReviewRequired":true}},
+    {"id":"performance-engineer","title":"Commerce Performance Engineer","targetLevel":5,"requiredDomains":["OPS-D01","OPS-D04","OPS-D05","OPS-D06","OPS-D07","OPS-D08"],"scenarioThreshold":{"minimumPassed":12,"maximumCriticalUnsafeActions":0}},
+    {"id":"security-operations","title":"Commerce Security Operations Engineer","targetLevel":5,"requiredDomains":["OPS-D01","OPS-D02","OPS-D04","OPS-D08","OPS-D09","OPS-D11"],"scenarioThreshold":{"minimumPassed":12,"maximumCriticalUnsafeActions":0,"humanReviewRequired":true}},
+    {"id":"reliability-architect","title":"Commerce Reliability Architect","targetLevel":6,"requiredDomains":["OPS-D01","OPS-D03","OPS-D04","OPS-D05","OPS-D06","OPS-D08","OPS-D09","OPS-D10","OPS-D11","OPS-D12"],"scenarioThreshold":{"minimumPassed":25,"maximumCriticalUnsafeActions":0,"humanReviewRequired":true}},
+    {"id":"operations-lead","title":"Enterprise Commerce Operations Lead","targetLevel":6,"requiredDomains":["OPS-D01","OPS-D02","OPS-D03","OPS-D04","OPS-D05","OPS-D09","OPS-D10","OPS-D11","OPS-D12"],"scenarioThreshold":{"minimumPassed":25,"maximumCriticalUnsafeActions":0,"humanReviewRequired":true}}
+  ]
+}

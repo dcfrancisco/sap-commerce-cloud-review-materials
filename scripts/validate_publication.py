@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-modules = sorted((ROOT / "content/modules").glob("*.md"))
+modules = sorted(list((ROOT / "content/modules").glob("*.md")) + list((ROOT / "content/operations/modules").glob("*.md")))
 errors = []
 page_counts = {}
 for source in modules:
