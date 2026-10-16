@@ -72,7 +72,7 @@ class OperationsApiTests(unittest.TestCase):
 
     def test_practice_api_withholds_solution_and_releases_it_after_submission(self):
         status, catalog = self.call("/api/practice/exercises")
-        self.assertEqual(status, 200); self.assertEqual(len(catalog["exercises"]), 10)
+        self.assertEqual(status, 200); self.assertEqual(len(catalog["exercises"]), 14)
         status, started = self.call("/api/practice/start", {"learnerId":"practice-api","exerciseId":"OPS-EX-D03-002","seed":"api-seed"})
         self.assertEqual(status, 201); self.assertNotIn("referenceSolution", started["exercise"]); self.assertNotIn("hints", started["exercise"])
         status, hint = self.call("/api/practice/hint", {"learnerId":"practice-api","sessionId":started["sessionId"]})
@@ -81,6 +81,24 @@ class OperationsApiTests(unittest.TestCase):
         response = f"Use schema compatibility migration and rollback evidence. Backup age {variant['backup']['ageMinutes']} and {variant['traffic']['businessWindow']} determine RPO RTO. Verify media search index health acceptance tests. Reconcile payment ERP order effects. Escalate managed support with logs timeline correlation records and validation evidence."
         status, result = self.call("/api/practice/submit", {"learnerId":"practice-api","sessionId":started["sessionId"],"response":response})
         self.assertEqual(status, 200); self.assertTrue(result["passed"], result); self.assertIn("referenceSolution", result)
+
+    def test_scenario_filters_and_recommendation_do_not_leak_solution(self):
+        status, filtered = self.call("/api/scenarios?role=administrator&product=backoffice")
+        self.assertEqual(status, 200)
+        self.assertEqual([item["id"] for item in filtered["scenarios"]], ["ECO-ADMIN-001"])
+        status, recommended = self.call("/api/scenarios/recommend", {"learnerId":"discovery-api","request":"Simulate a catalog synchronization failure where search is stale"})
+        self.assertEqual(status, 200)
+        self.assertEqual(recommended["recommendation"]["id"], "ECO-ADMIN-001")
+        serialized = json.dumps(recommended).lower()
+        self.assertNotIn("rootcause", serialized)
+        self.assertNotIn("referencesolution", serialized)
+        self.assertNotIn("invalid legacy classification", serialized)
+
+    def test_scenario_recommendation_abstains_and_rejects_invalid_filter(self):
+        status, result = self.call("/api/scenarios/recommend", {"learnerId":"discovery-none","request":"quantum banana orbital mechanics"})
+        self.assertEqual(status, 200); self.assertTrue(result["abstained"]); self.assertIsNone(result["recommendation"])
+        status, result = self.call("/api/scenarios?role=../../administrator")
+        self.assertEqual(status, 400); self.assertEqual(result["error"], "INVALID_ROLE_FILTER")
 
 
 if __name__ == "__main__": unittest.main()

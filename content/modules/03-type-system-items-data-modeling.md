@@ -92,6 +92,33 @@ Create a design record for `ComplianceDocument`, the product-document relation, 
 
 Choose between a subtype, an attribute, and a relation for “product has a primary sustainability rating plus audit history.” Defend the choice under these constraints: backoffice editing, OCC read exposure, historical reporting, and a future data import.
 
+## Testing competency — prove runtime type and persistence invariants
+
+An `items.xml` fragment can be syntactically valid while its generated model, runtime type metadata, database constraint, relation behavior, or migration is wrong. A POJO unit test is useful for a converter or validator but cannot prove platform persistence. SAP integration tests require a started Commerce environment and can use real items in the JUnit tenant [RS-SAP-TESTING-JUNIT] [RS-SAP-TESTING-EXECUTION].
+
+For the compliance-document example, begin with pure unit tests for code normalization and mapping. Then use a target-version transactional platform test for persistence:
+
+```java
+@IntegrationTest
+class ComplianceDocumentPersistenceTest
+    extends PlatformJUnit5TransactionalTest {
+  @Resource ModelService modelService;
+  @Resource FlexibleSearchService flexibleSearchService;
+
+  @Test void sameCodeMayExistInDifferentCatalogVersions() {
+    // Create isolated Staged and Online versions, persist both, query both.
+  }
+
+  @Test void duplicateWithinOneVersionIsRejected() {
+    // Persist one identity, attempt a duplicate, assert final row count.
+  }
+}
+```
+
+The class name illustrates current documented JUnit 5 infrastructure; exact inheritance, fixtures, imports, and failure types must be verified for the selected update line [RS-SAP-TESTING-JUNIT5]. Negative tests cover duplicate identity, invalid relation cardinality, missing mandatory values, delete behavior, and failed migration preconditions. Query final persisted state rather than accepting “save did not throw” as proof.
+
+Execution evidence records the test-system baseline, update line, type-system update, fixture identifiers, command, red result before repair, green result after repair, query assertions, and cleanup or transaction isolation. No generated model or JUnit tenant exists in this repository; `DEV-EX-M03-001` assesses the test design but is not executed SAP Commerce persistence evidence.
+
 ## References
 
 - [SAP-HELP-ITEMS] `items.xml`.
@@ -101,3 +128,6 @@ Choose between a subtype, an attribute, and a relation for “product has a prim
 - [RS-SAP-HELP-TYPE-UPDATES] Update Scenarios.
 - [RS-SAP-LEARN-DEPLOYMENT] Analyzing Data Type Deployment.
 - [RS-INDEPENDENT-CCI-DATA] Independent data-modeling guide; supplementary, not authoritative.
+- [RS-SAP-TESTING-JUNIT] Testing with JUnit.
+- [RS-SAP-TESTING-JUNIT5] Testing with JUnit 5.
+- [RS-SAP-TESTING-EXECUTION] Writing and Executing Tests.

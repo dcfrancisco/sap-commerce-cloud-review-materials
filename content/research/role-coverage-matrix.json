@@ -4,7 +4,9 @@
   "roles":[
     {"role":"backend-developer","modules":["M01","M02","M03","M04","M05","M06","M07","M09","M16","M23"],"implementedLevels":["foundation","intermediate"],"gaps":["real platform execution","advanced process/testing labs"]},
     {"role":"storefront-engineer","modules":["M05","M12","M13","M25"],"implementedLevels":["foundation"],"gaps":["runnable Angular workspace","B2B","SSR/E2E execution"]},
+    {"role":"full-stack-commerce-developer","modules":["M01","M02","M04","M05","M07","M10","M12","M13","M23","M25"],"implementedLevels":["foundation"],"gaps":["runnable SAP backend and Angular workspace","authenticated cart/checkout E2E","cross-layer performance lab"]},
     {"role":"administrator","modules":["M08","M09","M16","M17","M26"],"implementedLevels":["foundation"],"gaps":["live Backoffice/HAC exercises","permission matrix"]},
+    {"role":"backoffice-administrator","modules":["M08","M09","M15","M16","M17","M21","M26"],"implementedLevels":["foundation"],"gaps":["live Backoffice tenant","business administration workflows","role-specific permission lab"]},
     {"role":"devops-engineer","modules":["M20","M21","M22","M27"],"implementedLevels":["foundation"],"gaps":["Cloud Portal tenant","pipeline and recovery execution"]},
     {"role":"production-support","modules":["M14","M16","M22","M24","M27"],"implementedLevels":["foundation","intermediate"],"gaps":["larger incident library","telemetry replay"]},
     {"role":"integration-engineer","modules":["M12","M18","M19"],"implementedLevels":[],"gaps":["Integration API/Suite/S4 end-to-end slice"]},

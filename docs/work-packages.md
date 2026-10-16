@@ -3,8 +3,8 @@
 | Work package | Status | Evidence |
 | --- | --- | --- |
 | WP-01 repository and architecture audit | completed | `docs/current-state-audit.md` |
-| WP-02 source registry and verification | active/expanded | 57 registered sources, general and Operations/SRE coverage matrices, authority tiers, five contradiction records, and automated research QA |
-| WP-03 curriculum taxonomy and competency model | partial | 27-module roadmap; 20 published competencies across M01–M05 and M25–M27 |
+| WP-02 source registry and verification | active/expanded | 60 registered sources, general and Operations/SRE coverage matrices, authority tiers, five contradiction records, and automated research QA |
+| WP-03 curriculum taxonomy and competency model | partial | 27-module roadmap; 24 competencies across M01–M05 and M25–M27, including four independently scored testing competencies |
 | WP-04 structured content schema | partial | versioned course, competency, source, lab, assessment, contract records |
 | WP-05 foundational manuals | implemented/review required for M01–M05 | five authored manuals exist; commercial technical/editorial acceptance remains open |
 | WP-07 assessment authoring and validation | partial | 36 validated items across eight authored modules; automated field/mapping/duplicate QA; 1,164 items remain to the target |
@@ -22,6 +22,8 @@
 | OPS-WP-05 deep exercise production | Engineering Alpha | ten distinct exercise modes, seeded variants, progressive hints, protected solutions, persisted evidence, exact-count reporting and regression tests |
 | ECO-WP-01 stateful storefront slice | implemented/review required | expanded M25 manual and a persisted stale-price SSR/hydration investigation with consequential actions, coaching, competency evidence, tests, and an 8-page PDF |
 | ECO-WP-02 stateful administration slice | implemented/review required | expanded M26 manual and a persisted sync/index investigation with administrative safety hard-fails, coaching, competency evidence, tests, and a 7-page PDF |
+| DEV-TEST-WP-01 cross-cutting testing evidence | implemented/review required | four M02–M05 defect-driven exercises, dual competency scoring, negative-path and execution-evidence requirements, platform-runtime boundaries, and mastery cap tests |
+| ECO-WP-03 scenario discovery | Engineering Alpha | product/role/difficulty/competency/topic filtering and abstaining natural-request recommendation over implemented scenarios; no generated scenario is presented as available |
 
 ## Next execution order
 

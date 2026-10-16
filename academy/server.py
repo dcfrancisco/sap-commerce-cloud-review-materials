@@ -38,6 +38,18 @@ def public_item(item):
     return {key: item[key] for key in item if key not in {"answer", "explanation", "incorrectRationales"}}
 
 
+def scenario_filters(values):
+    result = {}
+    for key in ("role", "product", "difficulty", "competency", "track", "topic"):
+        raw = values.get(key)
+        value = raw[0] if isinstance(raw, list) and raw else raw
+        if value is None or value == "": continue
+        value = str(value).strip()
+        if len(value) > 80 or not all(character.isalnum() or character in "-_." for character in value): raise ValueError(f"INVALID_{key.upper()}_FILTER")
+        result[key] = value
+    return result
+
+
 class Handler(BaseHTTPRequestHandler):
     def _send(self, payload, status=200, content_type="application/json"):
         body = payload.encode() if isinstance(payload, str) else json.dumps(payload, indent=2).encode()
@@ -57,7 +69,10 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/": return self._send((ROOT / "academy" / "index.html").read_text(), content_type="text/html; charset=utf-8")
         if path == "/api/course": return self._send(load_json("content/course.json"))
         if path == "/api/incidents": return self._send({"labs": INCIDENTS.catalog()})
-        if path in {"/api/scenarios", "/api/operations/scenarios"}: return self._send({"scenarios": OPERATIONS.catalog()})
+        if path in {"/api/scenarios", "/api/operations/scenarios"}:
+            try: filters = scenario_filters(query)
+            except ValueError as exc: return self._send({"error":str(exc)}, 400)
+            return self._send({"scenarios":OPERATIONS.catalog(filters),"filters":filters,"facets":OPERATIONS.facets()})
         if path in {"/api/scenarios/progress", "/api/operations/progress"}: return self._send(OPERATIONS.store.incident_history(query.get("learnerId", ["local"])[0]))
         if path == "/api/practice/exercises": return self._send({"exercises":PRACTICE.catalog()})
         if path == "/api/practice/progress": return self._send(PRACTICE.store.practice_history(query.get("learnerId", ["local"])[0]))
@@ -95,6 +110,12 @@ class Handler(BaseHTTPRequestHandler):
             result = INCIDENTS.grade(body.get("labId"), body.get("response", "")); return self._send(result or {"error":"LAB_NOT_FOUND"}, 200 if result else 404)
         if path in {"/api/scenarios/start", "/api/operations/start"}:
             result = OPERATIONS.start(learner_id, body.get("scenarioId")); return self._send(result or {"error":"SCENARIO_NOT_FOUND"}, 201 if result else 404)
+        if path == "/api/scenarios/recommend":
+            try: filters = scenario_filters(body)
+            except ValueError as exc: return self._send({"error":str(exc)}, 400)
+            request = body.get("request", "")
+            if not isinstance(request, str) or len(request) > 2000: return self._send({"error":"INVALID_SCENARIO_REQUEST"}, 400)
+            return self._send(OPERATIONS.recommend(request, filters))
         if path in {"/api/scenarios/investigate", "/api/operations/investigate"}:
             result = OPERATIONS.investigate(learner_id, body.get("sessionId"), body.get("investigationId")); return self._send(result, 400 if result.get("error") else 200)
         if path in {"/api/scenarios/action", "/api/operations/action"}:

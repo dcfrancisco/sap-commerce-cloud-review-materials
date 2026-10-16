@@ -15,6 +15,8 @@ course = load("content/operations/course.json")
 roles = load("content/operations/role-paths.json")
 competencies = load("content/operations/competencies.json")
 general_competencies = load("content/competencies.json")
+general_roles = load("content/research/role-coverage-matrix.json")
+product_matrix = load("content/research/product-version-matrix.json")
 responsibilities = load("content/operations/responsibility-matrix.json")
 dependencies = load("content/operations/module-dependencies.json")
 publications = load("content/operations/publication-map.json")
@@ -29,6 +31,8 @@ exercise_schema = load("content/schemas/operations-exercise-family.schema.json")
 
 domains = course.get("domains", []); modules = [module for domain in domains for module in domain.get("modules", [])]
 module_ids = {module.get("id") for module in modules}; competency_ids = {item.get("id") for item in competencies.get("competencies", [])}; all_competency_ids = competency_ids | {item.get("id") for item in general_competencies.get("competencies", [])}; source_ids = {item.get("id") for item in sources.get("sources", []) + foundational_sources.get("sources", [])}
+known_roles = {item.get("id") for item in roles.get("roles", [])} | {item.get("role") for item in general_roles.get("roles", [])}
+known_products = {item.get("id") for item in product_matrix.get("products", [])}
 if len(domains) != 12: errors.append(f"expected 12 domains, found {len(domains)}")
 if len(modules) != 60: errors.append(f"expected 60 modules, found {len(modules)}")
 if len(module_ids) != len(modules): errors.append("duplicate operations module IDs")
@@ -65,6 +69,11 @@ for scenario in scenarios:
     scenario_ids.add(scenario_id)
     if scenario.get("schemaVersion") != "operations-scenario.v1": errors.append(f"{scenario_id}: invalid scenario schema")
     if len(scenario.get("investigations", [])) < 6 or len(scenario.get("actions", [])) < 6: errors.append(f"{scenario_id}: lacks investigative/action depth")
+    if not scenario.get("roles") or not scenario.get("products") or not scenario.get("topics") or not scenario.get("discoveryTerms"): errors.append(f"{scenario_id}: incomplete discovery metadata")
+    for role_id in scenario.get("roles", []):
+        if role_id not in known_roles: errors.append(f"{scenario_id}: unknown role {role_id}")
+    for product_id in scenario.get("products", []):
+        if product_id not in known_products: errors.append(f"{scenario_id}: unknown product {product_id}")
     action_ids = {item.get("id") for item in scenario.get("actions", [])}; investigation_ids = {item.get("id") for item in scenario.get("investigations", [])}
     all_action_ids = action_ids | investigation_ids
     for item in scenario.get("actions", []) + scenario.get("investigations", []):

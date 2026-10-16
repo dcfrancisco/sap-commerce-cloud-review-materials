@@ -17,8 +17,8 @@ class PracticeEngineTests(unittest.TestCase):
 
     def test_catalog_has_distinct_deep_exercise_types(self):
         catalog = self.engine.catalog()
-        self.assertEqual(len(catalog), 10)
-        self.assertEqual(len({item["type"] for item in catalog}), 10)
+        self.assertEqual(len(catalog), 14)
+        self.assertEqual(len({item["type"] for item in catalog}), 14)
         self.assertNotIn("published", {item["reviewStatus"] for item in catalog})
 
     def test_seed_is_reproducible_and_private_fields_are_withheld(self):

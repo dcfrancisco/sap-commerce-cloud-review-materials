@@ -1,12 +1,17 @@
 import html
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist"; DIST.mkdir(exist_ok=True)
 modules = sorted(list((ROOT / "content/modules").glob("*.md")) + list((ROOT / "content/operations/modules").glob("*.md")))
 if not modules: raise SystemExit("no module sources")
+if len(sys.argv) > 1:
+    requested = set(sys.argv[1:])
+    modules = [source for source in modules if source.stem in requested]
+    if not modules: raise SystemExit("no requested module sources matched")
 for source in modules:
     stem = source.stem
     parts = []

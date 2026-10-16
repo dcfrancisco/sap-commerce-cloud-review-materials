@@ -79,7 +79,8 @@ class ProgressStore:
         session = self.practice_session(session_id); now = datetime.now(timezone.utc).isoformat(); assisted = int(bool(session["state"].get("hintsUsed")))
         self.db.execute("UPDATE practice_sessions SET status='completed',result_json=?,updated_at=? WHERE id=?", (json.dumps(result), now, session_id))
         for competency_id in competency_ids:
-            self.db.execute("INSERT INTO practice_evidence(learner_id,competency_id,session_id,score,passed,assisted,created_at) VALUES(?,?,?,?,?,?,?)", (session["learner_id"], competency_id, session_id, result["score"], int(result["passed"]), assisted, now))
+            score = result.get("competencyScores", {}).get(competency_id, result["score"])
+            self.db.execute("INSERT INTO practice_evidence(learner_id,competency_id,session_id,score,passed,assisted,created_at) VALUES(?,?,?,?,?,?,?)", (session["learner_id"], competency_id, session_id, score, int(score >= 0.8), assisted, now))
         self.db.commit()
 
     def practice_history(self, learner_id):

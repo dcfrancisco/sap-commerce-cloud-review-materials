@@ -62,8 +62,34 @@ Design a service method that imports 1,000 products, rejects invalid records, an
 - Can the operation be retried safely?
 - Does rollback evidence include the database state and emitted events?
 
+## Testing competency — isolate logic, then prove transaction semantics
+
+Service tests need two layers. A unit test with Mockito verifies decisions, collaborator calls, exception propagation, and idempotency-key construction without booting Commerce. A platform integration test verifies model persistence, FlexibleSearch, Spring proxies, and actual transaction rollback. SAP recommends mocks for isolated POJO testing and a Commerce environment for integration behavior [RS-SAP-TESTING-EXECUTION].
+
+```java
+@Test
+void doesNotReserveWhenValidationFails() {
+  when(validator.validate(order)).thenReturn(invalid("currency"));
+  assertThrows(ValidationException.class, () -> service.place(order));
+  verifyNoInteractions(inventoryClient);
+}
+```
+
+The transaction test injects a failure after local models are saved but before completion, then queries in a new transaction/context and asserts that no partial local state remains. A second fault-injection test makes the remote stub accept a reservation and then time out. The expected result is not “database rollback fixed everything”; the system must expose durable idempotency or reconciliation state.
+
+```text
+red: accepted remotely -> timeout -> blind retry creates duplicate
+repair: durable operation/idempotency key plus reconciliation state
+green: local rollback; one remote effect; duplicate delivery returns same outcome
+```
+
+Negative-path evidence includes before/after database state, remote-stub request count, durable key, retry decision, and reconciliation result. Execution evidence includes separate unit and integration reports; a passing unit suite is never platform transaction proof. `DEV-EX-M04-001` uses synthetic fault evidence because neither a Commerce JUnit tenant nor an external service virtualizer is available here.
+
 ## References
 
 - [SAP-HELP-SERVICELAYER] Working with the ServiceLayer.
 - [SAP-HELP-TRANSACTIONS] Transactions.
 - [SAP-HELP-ITEMS] `items.xml` and ServiceLayer context.
+- [RS-SAP-TESTING-JUNIT] Testing with JUnit.
+- [RS-SAP-TESTING-JUNIT5] Testing with JUnit 5.
+- [RS-SAP-TESTING-EXECUTION] Writing and Executing Tests.

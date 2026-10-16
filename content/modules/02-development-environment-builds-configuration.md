@@ -91,6 +91,40 @@ Design a release checklist for a custom `yocc` extension. Include source revisio
 
 The M02 items test extension ownership, dependency diagnosis, configuration scope, and build evidence. Correct answers require reasoning, not recall of a directory tree.
 
+## Testing competency — extension wiring is executable architecture
+
+Compilation does not prove that extensions are selected, dependency declarations are complete, properties resolve correctly, or Spring creates the production bean graph. SAP distinguishes unit tests that do not require a running Commerce environment from integration tests that require SAP Commerce to be started [RS-SAP-TESTING-JUNIT]. Current JUnit 5 guidance is update-line-sensitive and documents platform base tests and runner configuration [RS-SAP-TESTING-JUNIT5].
+
+Use a fast unit test to prove isolated facade behavior:
+
+```java
+@ExtendWith(MockitoExtension.class)
+class DefaultAcademyFacadeTest {
+  @Mock AcademyCoreService coreService;
+  @InjectMocks DefaultAcademyFacade facade;
+
+  @Test void delegatesNormalizedCode() {
+    facade.findProduct(" acme-1 ");
+    verify(coreService).findProduct("ACME-1");
+  }
+}
+```
+
+That test cannot detect a missing `<requires-extension>` declaration. A target-version platform integration test must load the real context and resolve the bean. For update lines where it is supported, a project may use an appropriate JUnit 5 platform/service-layer base such as `ServicelayerJUnit5BaseTest`; verify the exact base and runner against the selected release.
+
+```java
+@IntegrationTest
+class AcademyContextIntegrationTest extends ServicelayerJUnit5BaseTest {
+  @Resource(name = "academyFacade") AcademyFacade academyFacade;
+
+  @Test void productionBeanGraphLoads() {
+    assertNotNull(academyFacade);
+  }
+}
+```
+
+Negative-path practice begins with the dependency deliberately absent. Record the first context failure, repair only the declared dependency, rerun the targeted test, and retain the XML report. Required execution evidence includes source revision, Commerce update line, JDK, `tests.runner.legacy` value where applicable, command or pipeline target, failing test identifier, passing rerun, duration, and report location. This repository has no SAP Commerce runtime, so `DEV-EX-M02-001` grades the diagnosis and evidence design but does not claim that the platform integration test ran.
+
 ## References
 
 - [SAP-HELP-EXTENSION] Extension Concept.
@@ -100,3 +134,6 @@ The M02 items test extension ownership, dependency diagnosis, configuration scop
 - [SAP-HELP-CLOUD-PORTAL] Cloud Portal.
 - [RS-SAP-GITHUB-CLOUD-SAMPLE] SAP Commerce Cloud Sample Repository.
 - [RS-SAP-HELP-JDK21] Update Release 2211-jdk21.1.
+- [RS-SAP-TESTING-JUNIT] Testing with JUnit.
+- [RS-SAP-TESTING-JUNIT5] Testing with JUnit 5.
+- [RS-SAP-TESTING-EXECUTION] Writing and Executing Tests.

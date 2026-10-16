@@ -15,9 +15,49 @@ class OperationsSimulation:
         for path in self.scenario_dir.glob("*.json"):
             scenario = json.loads(path.read_text()); self.scenarios[scenario["id"]] = scenario
 
-    def catalog(self):
-        public_keys = ("id", "version", "title", "difficulty", "estimatedMinutes", "simulationLabel", "track", "moduleId")
-        return [{key: scenario[key] for key in public_keys if key in scenario} for scenario in self.scenarios.values()]
+    PUBLIC_KEYS = ("id", "version", "title", "difficulty", "estimatedMinutes", "simulationLabel", "track", "moduleId", "products", "roles", "topics", "competencyIds")
+    FILTER_FIELDS = {"role":"roles", "product":"products", "difficulty":"difficulty", "competency":"competencyIds", "track":"track", "topic":"topics"}
+
+    def _public_scenario(self, scenario):
+        return {key: scenario[key] for key in self.PUBLIC_KEYS if key in scenario}
+
+    def catalog(self, filters=None):
+        filters = {key:str(value).strip().lower() for key,value in (filters or {}).items() if value}
+        scenarios = []
+        for scenario in self.scenarios.values():
+            matched = True
+            for query_name, query_value in filters.items():
+                field = self.FILTER_FIELDS.get(query_name)
+                if not field: continue
+                actual = scenario.get(field, [])
+                values = actual if isinstance(actual, list) else [actual]
+                if query_value not in {str(value).lower() for value in values}: matched = False; break
+            if matched: scenarios.append(self._public_scenario(scenario))
+        return sorted(scenarios, key=lambda item:item["id"])
+
+    def facets(self):
+        return {query_name:sorted({str(value) for scenario in self.scenarios.values() for value in (scenario.get(field, []) if isinstance(scenario.get(field, []), list) else [scenario.get(field)]) if value}) for query_name,field in self.FILTER_FIELDS.items()}
+
+    def recommend(self, request, filters=None):
+        request_text = str(request or "").strip().lower()[:2000]
+        candidates = self.catalog(filters)
+        if not candidates:
+            return {"recommendation":None,"alternatives":[],"abstained":True,"reason":"No implemented scenario satisfies every requested filter.","filters":filters or {},"facets":self.facets()}
+        request_tokens = set(re.findall(r"[a-z0-9]+", request_text))
+        ranked = []
+        for public in candidates:
+            scenario = self.scenarios[public["id"]]
+            fields = [scenario.get("title", ""), scenario.get("brief", ""), scenario.get("track", ""), *scenario.get("products", []), *scenario.get("roles", []), *scenario.get("topics", []), *scenario.get("competencyIds", []), *scenario.get("discoveryTerms", [])]
+            searchable = " ".join(fields).lower()
+            matched_tokens = sorted(request_tokens & set(re.findall(r"[a-z0-9]+", searchable)))
+            phrase_hits = [term for term in scenario.get("discoveryTerms", []) if term in request_text]
+            score = len(matched_tokens) + 3 * len(phrase_hits)
+            ranked.append((score, len(phrase_hits), public["id"], public, matched_tokens, phrase_hits))
+        ranked.sort(key=lambda item:(-item[0], -item[1], item[2]))
+        best = ranked[0]
+        if request_text and best[0] == 0 and not filters:
+            return {"recommendation":None,"alternatives":[item[3] for item in ranked],"abstained":True,"reason":"The request does not match an implemented scenario. No new SAP behavior was invented.","filters":{},"facets":self.facets()}
+        return {"recommendation":best[3],"alternatives":[item[3] for item in ranked[1:]],"abstained":False,"reason":"Selected from implemented synthetic scenarios using declared product, role, topic, competency, and difficulty metadata.","matchedTerms":sorted(set(best[4] + best[5])),"filters":filters or {}}
 
     def start(self, learner_id, scenario_id):
         scenario = self.scenarios.get(scenario_id)

@@ -77,6 +77,14 @@ class EcosystemStatefulScenarioTests(unittest.TestCase):
             self.assertIn("not reveal", hidden["response"])
             self.assertNotIn("missing currency", hidden["response"].lower())
 
+    def test_discovery_filters_and_natural_requests_are_deterministic(self):
+        filtered = self.sim.catalog({"role":"storefront-engineer", "product":"composable-storefront"})
+        self.assertEqual([item["id"] for item in filtered], ["ECO-CS-001"])
+        recommendation = self.sim.recommend("Give me a difficult failed deployment involving schema compatibility")
+        self.assertEqual(recommendation["recommendation"]["id"], "OPS-INC-001")
+        self.assertFalse(recommendation["abstained"])
+        self.assertNotIn("solution", recommendation["recommendation"])
+
 
 if __name__ == "__main__":
     unittest.main()

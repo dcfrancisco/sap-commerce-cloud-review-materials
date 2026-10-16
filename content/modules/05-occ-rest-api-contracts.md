@@ -68,6 +68,27 @@ Design `POST /orders` for a detached storefront. Address idempotency keys, dupli
 | Reliability | timeout, retry, duplicate idempotency key |
 | Security | injection-shaped input, enumeration, sensitive field exposure |
 
+## Testing competency — security requires negative API evidence
+
+An OCC implementation is incomplete when only its success response is tested. The developer owns unit tests, controller tests, contract tests, platform integration tests, and security-negative paths. Tests must distinguish authentication from resource authorization and use at least two customer identities so an ownership defect can be observed.
+
+```java
+@Test
+void rejectsOrderOwnedByAnotherCustomer() {
+  when(principal.uid()).thenReturn("customer-a");
+  when(orderAccess.canRead("customer-a", "ORDER-B")).thenReturn(false);
+  assertThrows(AccessDeniedException.class,
+      () -> controller.getOrder("customer-a", "ORDER-B"));
+  verify(orderFacade, never()).getOrderDetails("ORDER-B");
+}
+```
+
+This isolated test proves policy interaction, not the deployed security filter chain. The platform web/integration layer verifies token handling, route mapping, Spring Security configuration, serialization, error schema, and real facade wiring for the target update line. SAP’s test documentation places web tests in web test sources and requires the relevant runtime; JUnit 5 behavior also depends on the update line and runner configuration [RS-SAP-TESTING-JUNIT] [RS-SAP-TESTING-JUNIT5].
+
+Required negative cases include no token, invalid token, wrong customer, insufficient support role, malformed code, nonexistent order, invalid body, duplicate mutation, unsupported content type, and injected downstream failure. Assert status, stable error code, body sanitization, headers, and absence of data leakage.
+
+Execution evidence records the contract version, Commerce update, test identities, sanitized fixture, command, pre-repair failing ownership test, post-repair report, and trace proving the intended policy ran. `DEV-EX-M05-001` evaluates implementation and testing separately. Without passing test evidence, implementation mastery is capped below threshold. No live OCC endpoint is available here.
+
 ## References
 
 - [SAP-HELP-OCC-FEATURES] OCC Features.
@@ -76,3 +97,6 @@ Design `POST /orders` for a detached storefront. Address idempotency keys, dupli
 - [SAP-HELP-CLOUD-PORTAL] Cloud Portal.
 - [RS-SAP-HELP-OAUTH-MIGRATION] Moving to the New OAuth Implementation.
 - [RS-SAP-HELP-DEPRECATION] Deprecation Status.
+- [RS-SAP-TESTING-JUNIT] Testing with JUnit.
+- [RS-SAP-TESTING-JUNIT5] Testing with JUnit 5.
+- [RS-SAP-TESTING-EXECUTION] Writing and Executing Tests.
