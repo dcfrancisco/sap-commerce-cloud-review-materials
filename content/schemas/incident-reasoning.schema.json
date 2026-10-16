@@ -1,0 +1,16 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"academy://schemas/incident-reasoning.v1",
+  "title":"Structured Incident Reasoning",
+  "type":"object",
+  "required":["hypothesis","containment","recovery","verification","prevention","communication"],
+  "properties":{
+    "hypothesis":{"type":"object","required":["primaryCauseCategory","statement","supportingEvidence","rejectedAlternatives"],"properties":{"primaryCauseCategory":{"type":"string","minLength":1},"statement":{"type":"string","minLength":1},"supportingEvidence":{"type":"array","minItems":1,"items":{"type":"string"}},"rejectedAlternatives":{"type":"array","minItems":1,"items":{"type":"object","required":["category","reason","evidence"],"properties":{"category":{"type":"string"},"reason":{"type":"string","minLength":1},"evidence":{"type":"array","items":{"type":"string"}}},"additionalProperties":false}}},"additionalProperties":false},
+    "containment":{"type":"object","required":["actionId","rationale","riskAccepted","rollbackPlan"],"properties":{"actionId":{"type":"string"},"rationale":{"type":"string","minLength":1},"riskAccepted":{"type":"string","minLength":1},"rollbackPlan":{"type":"string","minLength":1}},"additionalProperties":false},
+    "recovery":{"type":"object","required":["actionId","rationale","residualRisk"],"properties":{"actionId":{"type":"string"},"rationale":{"type":"string","minLength":1},"residualRisk":{"type":"string","minLength":1}},"additionalProperties":false},
+    "verification":{"type":"array","minItems":1,"items":{"type":"object","required":["check","evidence","expected","observed"],"properties":{"check":{"type":"string"},"evidence":{"type":"array","items":{"type":"string"}},"expected":{"type":"string","minLength":1},"observed":{"type":"string","minLength":1}},"additionalProperties":false}},
+    "prevention":{"type":"array","minItems":1,"items":{"type":"object","required":["control","owner","measure"],"properties":{"control":{"type":"string","minLength":1},"owner":{"type":"string","minLength":1},"measure":{"type":"string","minLength":1}},"additionalProperties":false}},
+    "communication":{"type":"object","required":["impact","timeline","owner","nextUpdate"],"properties":{"impact":{"type":"string","minLength":1},"timeline":{"type":"string","minLength":1},"owner":{"type":"string","minLength":1},"nextUpdate":{"type":"string","minLength":1}},"additionalProperties":false}
+  },
+  "additionalProperties":false
+}

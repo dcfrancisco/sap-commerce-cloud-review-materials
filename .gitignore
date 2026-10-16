@@ -11,6 +11,9 @@ env/
 .coverage
 coverage.xml
 htmlcov/
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
 
 # Generated publication and build output
 dist/
@@ -18,6 +21,7 @@ build/
 tmp/
 *.egg-info/
 data/
+.academy/
 
 # Local runtime state and editor files
 .env
@@ -26,3 +30,9 @@ data/
 .vscode/
 .idea/
 .DS_Store
+
+# Browser test artifacts and local JavaScript dependencies
+node_modules/
+playwright-report/
+test-results/
+*.log

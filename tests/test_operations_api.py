@@ -54,6 +54,14 @@ class OperationsApiTests(unittest.TestCase):
         status, progress = self.call("/api/operations/progress?learnerId=api-learner")
         self.assertEqual(status, 200); self.assertEqual(progress["sessions"][0]["scenario_id"], "OPS-INC-001")
 
+    def test_contextual_coach_modes_and_persisted_resume(self):
+        status, started = self.call("/api/scenarios/start", {"learnerId":"resume-api","scenarioId":"OPS-INC-002"})
+        self.assertEqual(status, 201)
+        status, coached = self.call("/api/scenarios/coach", {"learnerId":"resume-api","sessionId":started["sessionId"],"message":"What evidence should I inspect next and why?","mode":"examination"})
+        self.assertEqual(status, 200); self.assertEqual(coached["mode"], "examination-coaching"); self.assertEqual(coached["context"]["scenarioId"], "OPS-INC-002")
+        status, resumed = self.call(f"/api/scenarios/session?learnerId=resume-api&sessionId={started['sessionId']}")
+        self.assertEqual(status, 200); self.assertEqual(resumed["sessionId"], started["sessionId"]); self.assertNotIn("referenceRootCause", resumed)
+
     def test_product_neutral_scenario_api_starts_storefront_slice(self):
         status, started = self.call("/api/scenarios/start", {"learnerId":"api-storefront","scenarioId":"ECO-CS-001"})
         self.assertEqual(status, 201)
@@ -72,7 +80,7 @@ class OperationsApiTests(unittest.TestCase):
 
     def test_practice_api_withholds_solution_and_releases_it_after_submission(self):
         status, catalog = self.call("/api/practice/exercises")
-        self.assertEqual(status, 200); self.assertEqual(len(catalog["exercises"]), 19)
+        self.assertEqual(status, 200); self.assertEqual(len(catalog["exercises"]), 22)
         status, started = self.call("/api/practice/start", {"learnerId":"practice-api","exerciseId":"OPS-EX-D03-002","seed":"api-seed"})
         self.assertEqual(status, 201); self.assertNotIn("referenceSolution", started["exercise"]); self.assertNotIn("hints", started["exercise"])
         status, hint = self.call("/api/practice/hint", {"learnerId":"practice-api","sessionId":started["sessionId"]})

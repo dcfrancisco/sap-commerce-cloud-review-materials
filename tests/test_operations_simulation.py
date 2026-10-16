@@ -26,6 +26,9 @@ class OperationsSimulationTests(unittest.TestCase):
         ordered = ["inspect-deployment-history", "inspect-error-logs", "inspect-api-metrics", "inspect-schema-diff", "inspect-backup", "inspect-business-transactions", "inspect-change-approval"]
         return [self.sim.investigate(learner, session_id, action) for action in ordered]
 
+    def structured_conclusion(self):
+        return {"hypothesis":{"primaryCauseCategory":"schema-mapping-conflict","statement":"The migration mapping conflict prevented activation.","supportingEvidence":["inspect-deployment-history","inspect-error-logs","inspect-schema-diff"],"rejectedAlternatives":[{"category":"jvm-pressure","reason":"JVM indicators do not lead the failure.","evidence":["inspect-api-metrics"]},{"category":"old-build-compatible","reason":"Compatibility was not established after persistent change.","evidence":["inspect-schema-diff"]}]},"containment":{"actionId":"freeze-deployments","rationale":"Freeze change while schema state is investigated.","riskAccepted":"Release activity pauses.","rollbackPlan":"Resume only after corrected rehearsal."},"recovery":{"actionId":"redeploy-corrected-migrate","rationale":"Forward recovery uses a corrected compatible mapping.","residualRisk":"Payment exceptions require reconciliation."},"verification":[{"check":"health","evidence":["inspect-api-metrics"],"expected":"critical endpoints recover","observed":"synthetic health passes"},{"check":"integrity","evidence":["inspect-business-transactions"],"expected":"external exceptions reconciled","observed":"controlled reconciliation queued"},{"check":"backup","evidence":["inspect-backup"],"expected":"recovery point remains preserved","observed":"backup retained"}],"prevention":[{"control":"migration rehearsal","owner":"release team","measure":"fresh production-like evidence"},{"control":"compatibility gate","owner":"architecture","measure":"no unproven rollback"}],"communication":{"impact":"checkout unavailable","timeline":"deployment to recovery","owner":"incident commander","nextUpdate":"every 15 minutes"}}
+
     def test_start_withholds_solution_and_labels_simulation(self):
         started = self.start()
         self.assertIn("synthetic", started["simulationLabel"].lower())
@@ -51,8 +54,7 @@ class OperationsSimulationTests(unittest.TestCase):
         self.assertEqual(recovery["serviceState"], "recovering")
         verified = self.sim.act("operator-1", session_id, "validate-recovery")
         self.assertEqual(verified["serviceState"], "healthy")
-        conclusion = "The timeline and impact show a migrate data schema mapping conflict, not JVM pressure. Preserve the backup, use an additive corrected deployment, verify health and checkout, reconcile payment and order exceptions, keep SAP support engaged, assign an owner, and add a rehearsal gate and runbook alert."
-        result = self.sim.conclude("operator-1", session_id, conclusion)
+        result = self.sim.conclude("operator-1", session_id, self.structured_conclusion())
         self.assertTrue(result["passed"], result)
         history = self.store.incident_history("operator-1")
         self.assertEqual(history["sessions"][0]["status"], "completed")
@@ -67,7 +69,7 @@ class OperationsSimulationTests(unittest.TestCase):
         self.sim.act("operator-1", session_id, "engage-sap-support")
         self.sim.act("operator-1", session_id, "redeploy-corrected-migrate")
         self.sim.act("operator-1", session_id, "validate-recovery")
-        result = self.sim.conclude("operator-1", session_id, "Timeline impact owner migration schema mapping rollback compatibility backup restore media reconcile payment order verify health acceptance support escalation rehearsal additive gate runbook alert.")
+        result = self.sim.conclude("operator-1", session_id, self.structured_conclusion())
         self.assertFalse(result["passed"])
         self.assertIn("deploy-previous-build", result["unsafeActions"])
         self.assertEqual(result["dimensions"]["riskAssessment"], 0.0)

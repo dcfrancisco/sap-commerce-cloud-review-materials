@@ -3,6 +3,9 @@ import re
 from copy import deepcopy
 from pathlib import Path
 
+from .contextual_tutor import ContextualTutor
+from .semantic_feedback import GuardedSemanticFeedback
+
 
 class OperationsSimulation:
     """Deterministic, stateful operations simulator backed by auditable event records."""
@@ -14,6 +17,8 @@ class OperationsSimulation:
         self.scenarios = {}
         for path in self.scenario_dir.glob("*.json"):
             scenario = json.loads(path.read_text()); self.scenarios[scenario["id"]] = scenario
+        self.contextual_tutor = ContextualTutor(root)
+        self.semantic_feedback = GuardedSemanticFeedback()
 
     PUBLIC_KEYS = ("id", "version", "title", "difficulty", "estimatedMinutes", "simulationLabel", "track", "moduleId", "products", "roles", "topics", "competencyIds")
     FILTER_FIELDS = {"role":"roles", "product":"products", "difficulty":"difficulty", "competency":"competencyIds", "track":"track", "topic":"topics"}
@@ -65,7 +70,15 @@ class OperationsSimulation:
         state = deepcopy(scenario["initialState"])
         state.update({"investigations":[], "actions":[], "unsafeActions":[], "elapsedMinutes":0, "status":"active"})
         session_id = self.store.create_incident_session(learner_id, scenario_id, scenario["version"], state)
-        return {"sessionId":session_id, "scenarioId":scenario_id, "version":scenario["version"], "title":scenario["title"], "track":scenario.get("track", "operations-sre"), "moduleId":scenario.get("moduleId"), "simulationLabel":scenario["simulationLabel"], "brief":scenario["brief"], "businessImpact":state["businessImpact"], "availableInvestigations":self._available(scenario, state, "investigations"), "availableActions":self._available(scenario, state, "actions")}
+        return self._session_view(session_id, scenario_id, scenario, state)
+
+    def _session_view(self, session_id, scenario_id, scenario, state):
+        return {"sessionId":session_id, "scenarioId":scenario_id, "version":scenario["version"], "title":scenario["title"], "track":scenario.get("track", "operations-sre"), "moduleId":scenario.get("moduleId"), "simulationLabel":scenario["simulationLabel"], "brief":scenario["brief"], "businessImpact":state["businessImpact"], "status":state.get("status", "active"), "investigationsCompleted":state.get("investigations", []), "actionsTaken":state.get("actions", []), "availableInvestigations":self._available(scenario, state, "investigations"), "availableActions":self._available(scenario, state, "actions")}
+
+    def resume(self, learner_id, session_id):
+        session, scenario = self._load(session_id, learner_id)
+        if not session or not scenario: return None
+        return self._session_view(session_id, session["scenario_id"], scenario, session["state"])
 
     def _available(self, scenario, state, section):
         done = set(state["investigations"] + state["actions"])
@@ -103,6 +116,8 @@ class OperationsSimulation:
     def conclude(self, learner_id, session_id, response):
         session, scenario = self._load(session_id, learner_id)
         if not session or session["status"] != "active": return {"error":"SESSION_NOT_ACTIVE"}
+        if scenario.get("assessmentMode") == "structured-reasoning":
+            return self._conclude_structured(learner_id, session_id, session, scenario, response)
         state = session["state"]; text = str(response).lower(); tokens = set(re.findall(r"[a-z0-9]+", text))
         scoring = scenario["scoring"]
         required_evidence = set(scoring["requiredEvidence"]); evidence_ratio = len(required_evidence & set(state["investigations"])) / len(required_evidence)
@@ -141,20 +156,154 @@ class OperationsSimulation:
         self.store.update_incident(session_id, state, "conclusion", "submit-conclusion", {"response":response}, {"score":score,"passed":passed})
         self.store.complete_incident(session_id, competency_scores, result); return result
 
-    def coach(self, learner_id, session_id, message):
+    def _conclude_structured(self, learner_id, session_id, session, scenario, response):
+        """Grade structured reasoning fields; prose is feedback, never the score."""
+        if not isinstance(response, dict):
+            return {"error":"STRUCTURED_REASONING_REQUIRED", "requiredFields":["hypothesis","containment","recovery","verification","prevention","communication"]}
+        model = scenario.get("reasoningModel", {})
+        state = session["state"]
+        revealed = set(state["investigations"])
+        taken = set(state["actions"])
+        invalid = []
+        contradictions = []
+        missing = []
+
+        def text_value(value):
+            return isinstance(value, str) and bool(value.strip())
+
+        def evidence_ids(value, path):
+            if not isinstance(value, list) or not value:
+                missing.append(path)
+                return set()
+            ids = set(value)
+            invalid.extend(f"{path}:{item}" for item in ids - revealed)
+            return ids & revealed
+
+        hypothesis = response.get("hypothesis")
+        if not isinstance(hypothesis, dict):
+            missing.append("hypothesis")
+            hypothesis = {}
+        primary = hypothesis.get("primaryCauseCategory")
+        if primary not in model.get("primaryCauseCategories", []):
+            contradictions.append("primary cause category is not the governed scenario category")
+        supporting = evidence_ids(hypothesis.get("supportingEvidence"), "hypothesis.supportingEvidence")
+        if not text_value(hypothesis.get("statement")): missing.append("hypothesis.statement")
+        alternatives = hypothesis.get("rejectedAlternatives")
+        if not isinstance(alternatives, list) or len(alternatives) < model.get("minimumRejectedAlternatives", 2):
+            missing.append("hypothesis.rejectedAlternatives")
+            alternatives = []
+        alternative_score = 0
+        for index, alternative in enumerate(alternatives):
+            path = f"hypothesis.rejectedAlternatives[{index}]"
+            if not isinstance(alternative, dict):
+                invalid.append(path); continue
+            category = alternative.get("category")
+            if category not in model.get("alternativeCategories", []):
+                contradictions.append(f"{path} is not an allowed alternative")
+            else:
+                alternative_score += 1
+            if not text_value(alternative.get("reason")): missing.append(path + ".reason")
+            evidence_ids(alternative.get("evidence"), path + ".evidence")
+
+        containment = response.get("containment")
+        if not isinstance(containment, dict):
+            missing.append("containment"); containment = {}
+        containment_action = containment.get("actionId")
+        if containment_action not in taken:
+            invalid.append("containment.actionId:not-taken")
+        if containment_action in state.get("unsafeActions", []) or containment_action in model.get("unsafeActions", []):
+            contradictions.append("containment recommends an unsafe action")
+        for field in ("rationale", "riskAccepted", "rollbackPlan"):
+            if not text_value(containment.get(field)): missing.append("containment." + field)
+
+        recovery = response.get("recovery")
+        if not isinstance(recovery, dict):
+            missing.append("recovery"); recovery = {}
+        recovery_action = recovery.get("actionId")
+        if recovery_action not in taken: invalid.append("recovery.actionId:not-taken")
+        if recovery_action not in model.get("acceptedRecoveryActions", []): contradictions.append("recovery action is not accepted for this scenario")
+        for field in ("rationale", "residualRisk"):
+            if not text_value(recovery.get(field)): missing.append("recovery." + field)
+
+        verification = response.get("verification")
+        if not isinstance(verification, list) or len(verification) < model.get("minimumVerificationChecks", 3):
+            missing.append("verification")
+            verification = []
+        valid_verification = 0
+        for index, check in enumerate(verification):
+            path = f"verification[{index}]"
+            if not isinstance(check, dict): invalid.append(path); continue
+            refs = evidence_ids(check.get("evidence"), path + ".evidence")
+            if refs and text_value(check.get("expected")) and text_value(check.get("observed")): valid_verification += 1
+            else:
+                missing.extend(field for field in (path + ".expected", path + ".observed") if not text_value(check.get(field.rsplit(".", 1)[-1])))
+        if model.get("verificationAction") not in taken: contradictions.append("required verification action was not taken")
+
+        prevention = response.get("prevention")
+        if not isinstance(prevention, list) or len(prevention) < model.get("minimumPreventionControls", 2):
+            missing.append("prevention")
+            prevention = []
+        valid_prevention = 0
+        for index, control in enumerate(prevention):
+            path = f"prevention[{index}]"
+            if not isinstance(control, dict): invalid.append(path); continue
+            if all(text_value(control.get(field)) for field in ("control", "owner", "measure")): valid_prevention += 1
+            else: missing.append(path)
+
+        communication = response.get("communication")
+        if not isinstance(communication, dict):
+            missing.append("communication"); communication = {}
+        for field in ("impact", "timeline", "owner", "nextUpdate"):
+            if not text_value(communication.get(field)): missing.append("communication." + field)
+
+        dimensions = {
+            "hypothesis": 1.0 if primary == model.get("preferredPrimary") and len(supporting) >= model.get("minimumSupportingEvidence", 2) and text_value(hypothesis.get("statement")) else 0.0,
+            "supportingEvidence": round(min(1.0, len(supporting) / max(1, model.get("minimumSupportingEvidence", 2))), 2),
+            "rejectedAlternatives": round(min(1.0, alternative_score / max(1, model.get("minimumRejectedAlternatives", 2))), 2),
+            "containment": 1.0 if containment_action == model.get("containmentAction") and not any(item.startswith("containment") for item in invalid) else 0.0,
+            "recovery": 1.0 if recovery_action in model.get("acceptedRecoveryActions", []) and not any(item.startswith("recovery") for item in invalid) else 0.0,
+            "verification": round(min(1.0, valid_verification / max(1, model.get("minimumVerificationChecks", 3))), 2),
+            "prevention": round(min(1.0, valid_prevention / max(1, model.get("minimumPreventionControls", 2))), 2),
+            "communication": 1.0 if not any(item.startswith("communication") for item in missing) else 0.0,
+        }
+        if contradictions or invalid or state.get("unsafeActions"):
+            dimensions["safetyAndConsistency"] = 0.0
+        else:
+            dimensions["safetyAndConsistency"] = 1.0
+        dimensions["riskAssessment"] = dimensions["safetyAndConsistency"]
+        score = round(sum(dimensions.values()) / len(dimensions), 2)
+        core = ("hypothesis", "rejectedAlternatives", "containment", "recovery", "verification", "prevention", "communication")
+        passed = not missing and not invalid and not contradictions and dimensions["safetyAndConsistency"] >= 0.8 and all(dimensions[key] >= 0.8 for key in core) and score >= model.get("passThreshold", 0.8)
+        state["status"] = "completed"; state["finalResponse"] = response
+        result = {
+            "sessionId":session_id, "assessmentMode":"structured-reasoning", "score":score, "passed":passed,
+            "dimensions":dimensions, "unsafeActions":state.get("unsafeActions", []), "missingFields":sorted(set(missing)), "invalidReferences":sorted(set(invalid)),
+            "contradictions":sorted(set(contradictions)), "evidenceReviewed":state["investigations"], "actionsTaken":state["actions"],
+            "referenceRootCause":scenario["solution"]["rootCause"], "recommendedRecovery":scenario["solution"]["recovery"],
+            "feedback":"Deterministic scoring uses selected evidence, governed action IDs, verification records, and prevention structure. Prose is retained for guarded semantic feedback and does not substitute for missing evidence."
+        }
+        dimension_map = scenario["scoring"].get("competencyDimensions", {})
+        result["competencyScores"] = {
+            competency: round(sum(dimensions[name] for name in names if name in dimensions) / len([name for name in names if name in dimensions]), 2) if [name for name in names if name in dimensions] else score
+            for competency, names in dimension_map.items()
+        }
+        result["semanticFeedback"] = self.semantic_feedback.review(response, result, scenario)
+        self.store.update_incident(session_id, state, "conclusion", "submit-structured-conclusion", {"response":response}, {"score":score,"passed":passed,"dimensions":dimensions})
+        self.store.complete_incident(session_id, result["competencyScores"], result)
+        return result
+
+    def coach(self, learner_id, session_id, message, mode="tutoring"):
         session, scenario = self._load(session_id, learner_id)
         if not session: return {"error":"SESSION_NOT_FOUND"}
         state = session["state"]; message_text = str(message).lower()
         if session["status"] == "completed":
             result = session["result"]
             return {"mode":"post-incident-review","response":"Compare your event stream with the scored dimensions. The reference root cause was: " + result["referenceRootCause"],"citations":scenario["sourceIds"],"confidence":"deterministic-scenario-result","remediation":[key for key,value in result["dimensions"].items() if value < 0.8]}
-        if "root cause" in message_text or "answer" in message_text or "solution" in message_text:
-            response = "I will not reveal the reference solution during an active incident. State your current hypothesis, the evidence supporting it, and the observation that would disprove it."
-        else:
-            completed = set(state["investigations"] + state["actions"])
-            prompt = next((item["prompt"] for item in scenario["tutor"]["sequence"] if item["until"] not in completed), None)
-            response = prompt or scenario["tutor"]["conclusionPrompt"]
-        result = {"mode":"active-incident-coaching","response":response,"citations":scenario["tutor"]["citations"],"confidence":"grounded-scenario-guidance","uncertainty":scenario["tutor"]["uncertainty"]}
+        revealed = []
+        for item_id in state.get("investigations", []):
+            item = next((candidate for candidate in scenario.get("investigations", []) if candidate["id"] == item_id), None)
+            if item: revealed.append({"id":item_id,"evidence":item.get("evidence", {})})
+        result = self.contextual_tutor.answer({"scenario":scenario,"state":state,"message":message,"mode":mode,"revealedEvidence":revealed,"availableInvestigations":self._available(scenario,state,"investigations"),"availableActions":self._available(scenario,state,"actions")})
         self.store.update_incident(session_id, state, "tutor", "coach", {"message":str(message)[:2000]}, result); return result
 
     def reset(self, learner_id, session_id):

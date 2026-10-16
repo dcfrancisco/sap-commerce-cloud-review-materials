@@ -74,6 +74,9 @@ class Handler(BaseHTTPRequestHandler):
             except ValueError as exc: return self._send({"error":str(exc)}, 400)
             return self._send({"scenarios":OPERATIONS.catalog(filters),"filters":filters,"facets":OPERATIONS.facets()})
         if path in {"/api/scenarios/progress", "/api/operations/progress"}: return self._send(OPERATIONS.store.incident_history(query.get("learnerId", ["local"])[0]))
+        if path in {"/api/scenarios/session", "/api/operations/session"}:
+            result = OPERATIONS.resume(query.get("learnerId", ["local"])[0], query.get("sessionId", [""])[0])
+            return self._send(result or {"error":"SESSION_NOT_FOUND"}, 200 if result else 404)
         if path == "/api/practice/exercises": return self._send({"exercises":PRACTICE.catalog()})
         if path == "/api/practice/progress": return self._send(PRACTICE.store.practice_history(query.get("learnerId", ["local"])[0]))
         if path.startswith("/api/module/"):
@@ -121,11 +124,16 @@ class Handler(BaseHTTPRequestHandler):
         if path in {"/api/scenarios/action", "/api/operations/action"}:
             result = OPERATIONS.act(learner_id, body.get("sessionId"), body.get("actionId")); return self._send(result, 400 if result.get("error") else 200)
         if path in {"/api/scenarios/conclude", "/api/operations/conclude"}:
-            response = str(body.get("response", ""))
-            if len(response) < 80 or len(response) > 12000: return self._send({"error":"INVALID_CONCLUSION_LENGTH"}, 400)
+            response = body.get("response", "")
+            if isinstance(response, dict):
+                if len(json.dumps(response)) > 12000: return self._send({"error":"INVALID_CONCLUSION_LENGTH"}, 400)
+            elif not isinstance(response, str) or len(response) < 80 or len(response) > 12000:
+                return self._send({"error":"INVALID_CONCLUSION_LENGTH"}, 400)
             result = OPERATIONS.conclude(learner_id, body.get("sessionId"), response); return self._send(result, 400 if result.get("error") else 200)
         if path in {"/api/scenarios/coach", "/api/operations/coach"}:
-            result = OPERATIONS.coach(learner_id, body.get("sessionId"), body.get("message", "")); return self._send(result, 400 if result.get("error") else 200)
+            mode = body.get("mode", "tutoring")
+            if mode not in {"tutoring", "examination"}: return self._send({"error":"INVALID_TUTOR_MODE"}, 400)
+            result = OPERATIONS.coach(learner_id, body.get("sessionId"), body.get("message", ""), mode); return self._send(result, 400 if result.get("error") else 200)
         if path in {"/api/scenarios/reset", "/api/operations/reset"}:
             deleted = OPERATIONS.reset(learner_id, body.get("sessionId")); return self._send({"reset":deleted}, 200 if deleted else 404)
         if path == "/api/practice/start":

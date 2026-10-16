@@ -29,6 +29,7 @@ exercise_families = [load(str(path.relative_to(ROOT))) for path in sorted((ROOT 
 sources = load("content/research/source-registry.json")
 foundational_sources = load("content/sources.json")
 exercise_schema = load("content/schemas/operations-exercise-family.schema.json")
+reasoning_schema = load("content/schemas/incident-reasoning.schema.json")
 
 domains = course.get("domains", []); modules = [module for domain in domains for module in domain.get("modules", [])]
 module_ids = {module.get("id") for module in modules}; competency_ids = {item.get("id") for item in competencies.get("competencies", [])}; all_competency_ids = competency_ids | {item.get("id") for item in general_competencies.get("competencies", [])}; source_ids = {item.get("id") for item in sources.get("sources", []) + foundational_sources.get("sources", [])}
@@ -94,6 +95,13 @@ for scenario in scenarios:
         if competency_id not in all_competency_ids: errors.append(f"{scenario_id}: unknown competency {competency_id}")
     for source_id in scenario.get("sourceIds", []):
         if source_id not in source_ids: errors.append(f"{scenario_id}: unknown source {source_id}")
+    if scenario.get("assessmentMode") == "structured-reasoning":
+        model = scenario.get("reasoningModel", {})
+        for field in ("preferredPrimary", "containmentAction", "verificationAction", "acceptedRecoveryActions", "minimumSupportingEvidence", "minimumRejectedAlternatives", "minimumVerificationChecks", "minimumPreventionControls"):
+            if field not in model: errors.append(f"{scenario_id}: structured reasoning model missing {field}")
+        action_ids = {item.get("id") for item in scenario.get("actions", [])}
+        if model.get("containmentAction") not in action_ids or model.get("verificationAction") not in action_ids: errors.append(f"{scenario_id}: reasoning model action mapping invalid")
+        if not set(model.get("acceptedRecoveryActions", [])) <= action_ids: errors.append(f"{scenario_id}: reasoning recovery mapping invalid")
 
 items = [item for assessment in assessments for item in assessment.get("items", [])]; prompts = set(); item_ids = set()
 required_fields = {"id","moduleId","competencyIds","type","difficulty","scenario","prompt","answer","explanation","rubric","applicableVersion","sourceIds","evaluationEvidence","reviewStatus","version"}
@@ -134,6 +142,7 @@ for index,(left_id,left) in enumerate(exercise_prompts):
         similarity = len(left & right) / max(1, len(left | right))
         if similarity >= 0.8: errors.append(f"near-duplicate exercise prompts: {left_id}, {right_id} ({similarity:.2f})")
 if exercise_schema.get("$id") != "academy://schemas/operations-exercise-family.v1": errors.append("exercise-family JSON schema missing or invalid")
+if reasoning_schema.get("$id") != "academy://schemas/incident-reasoning.v1": errors.append("incident-reasoning JSON schema missing or invalid")
 if course.get("actual", {}).get("machineValidatedExercises") != len([item for item in exercises if item.get("reviewStatus") == "implemented-machine-validated"]): errors.append("course actual exercise count drift")
 
 gate_statuses = {gate.get("status") for gate in gates.get("gates", [])}
