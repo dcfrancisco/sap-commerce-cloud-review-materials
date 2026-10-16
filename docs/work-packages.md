@@ -7,7 +7,7 @@
 | WP-03 curriculum taxonomy and competency model | partial | 27-module roadmap; 24 competencies across M01–M05 and M25–M27, including four independently scored testing competencies |
 | WP-04 structured content schema | partial | versioned course, competency, source, lab, assessment, contract records |
 | WP-05 foundational manuals | implemented/review required for M01–M05 | five authored manuals exist; commercial technical/editorial acceptance remains open |
-| WP-07 assessment authoring and validation | partial | 36 general validated items and 21 Operations/SRE internally validated items; structured incident reasoning checks include evidence, alternatives, safety, verification, and prevention; target corpus remains future work |
+| WP-07 assessment authoring and validation | partial | 36 general validated items and 36 Operations/SRE internally validated items; typed evaluator strategies, structured incident reasoning, contradiction/unsafe-action checks, and guarded semantic escalation; target corpus remains future work |
 | WP-08 hands-on lab framework | expanded MVP | deterministic catalog lab, four M02–M05 labs, three staged ecosystem labs, and three stateful ecosystem incidents |
 | WP-12 tutor boundary | MVP complete | local grounded adapter with citation/abstention behavior |
 | WP-13 evidence and competency evaluation | MVP complete | SQLite attempts, evidence, progress, retesting-compatible records |
@@ -20,9 +20,10 @@
 | OPS-WP-03 transaction-observability reference unit | implemented/review required | substantial manual, six assessments, five exercises, two new competencies, stateful checkout/JDBC-pool incident, dimension-specific evidence, and official 2211 observability sources |
 | OPS-WP-06 structured reasoning and contextual coaching | Engineering Alpha | structured incident submission contract, deterministic dimension scoring, contradiction/unsafe-action constraints, advisory semantic feedback boundary, contextual tutor modes, solution withholding, persisted resume, and browser learner journey |
 | OPS-WP-07 structured logging reference unit | implemented/review required | 3,300+ word manual, five assessments, three exercises, nine competencies/sources mapped, generated 8-page PDF, and publication QA |
+| OPS-WP-08 Domain 04 observability expansion | implemented/review required | OpenSearch investigation, service-health dashboard, and alert-engineering manuals; 15 assessments, nine exercises, 21 generated PDF pages, negative-path tests, and explicit simulation/runtime boundaries |
 | OPS-WP-03 operations simulation runtime | Engineering Alpha | progressive evidence, consequential actions, safety hard-fail, coaching, persistence, reset/replay and API |
 | OPS-WP-04 commercial gates | active | machine-readable A-H gate status; no commercial eligibility; all human reviews pending |
-| OPS-WP-05 deep exercise production | Engineering Alpha | ten distinct exercise modes, seeded variants, progressive hints, protected solutions, persisted evidence, exact-count reporting and regression tests |
+| OPS-WP-05 deep exercise production | Engineering Alpha | 13 distinct exercise modes, seeded variants, progressive hints, protected solutions, persisted evidence, exact-count reporting and regression tests |
 | ECO-WP-01 stateful storefront slice | implemented/review required | expanded M25 manual and a persisted stale-price SSR/hydration investigation with consequential actions, coaching, competency evidence, tests, and an 8-page PDF |
 | ECO-WP-02 stateful administration slice | implemented/review required | expanded M26 manual and a persisted sync/index investigation with administrative safety hard-fails, coaching, competency evidence, tests, and a 7-page PDF |
 | DEV-TEST-WP-01 cross-cutting testing evidence | implemented/review required | four M02–M05 defect-driven exercises, dual competency scoring, negative-path and execution-evidence requirements, platform-runtime boundaries, and mastery cap tests |
@@ -33,6 +34,6 @@
 1. Obtain SAP technical, professional editorial, security, accessibility, and learner review for OPS-D03-M01; remediate findings before reference-unit promotion.
 2. Obtain SAP storefront and Backoffice administrator review of M25, M26, and both synthetic scenarios; verify exact target-release APIs in licensed runtimes.
 3. Extend browser E2E and add concurrency, migration, authorization, and scenario fault-injection coverage.
-4. Complete OpenSearch investigation, service-health dashboard, and alert-engineering modules using the same depth and evidence standard.
+4. Add live-provider, alert delivery, and SAP Commerce runtime evidence when authorized environments are available.
 5. Expand scenarios only after source and review capacity is available; do not bulk-generate the 2,500-item target.
 6. Re-audit when Athena Hub or Forma repositories become available and implement adapters only against discovered interfaces.

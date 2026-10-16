@@ -1,4 +1,6 @@
-import re
+import json
+import os
+import urllib.request
 
 
 class ContextualTutorProvider:
@@ -6,6 +8,37 @@ class ContextualTutorProvider:
 
     def answer(self, context):
         raise NotImplementedError
+
+
+class HttpContextualTutor(ContextualTutorProvider):
+    """Configurable model adapter; the local engine remains authoritative."""
+
+    def __init__(self, endpoint):
+        self.endpoint = endpoint
+
+    def answer(self, context):
+        scenario = dict(context["scenario"])
+        for hidden in ("reasoningModel", "referenceRootCause", "recommendedRecovery"):
+            scenario.pop(hidden, None)
+        payload = {
+            "scenario": {"id": scenario.get("id"), "title": scenario.get("title"), "topics": scenario.get("topics", []), "sourceIds": scenario.get("sourceIds", [])},
+            "mode": context.get("mode", "tutoring"),
+            "question": str(context.get("message", ""))[:4000],
+            "revealedEvidence": context.get("revealedEvidence", []),
+            "actionsTaken": context.get("state", {}).get("actions", []),
+            "availableInvestigations": context.get("availableInvestigations", []),
+            "availableActions": context.get("availableActions", []),
+            "priorAttempts": context.get("priorAttempts", []),
+            "references": sorted(set(scenario.get("sourceIds", []) + context.get("references", []))),
+            "instruction": "Answer as a tutor. Cite only supplied references. Never reveal an active assessment solution or invent SAP facts.",
+        }
+        request = urllib.request.Request(self.endpoint, data=json.dumps(payload).encode(), headers={"Content-Type": "application/json"}, method="POST")
+        with urllib.request.urlopen(request, timeout=10) as result:
+            response = json.loads(result.read().decode())
+        text = response.get("response") or response.get("answer")
+        if not isinstance(text, str) or not text.strip():
+            raise ValueError("configured tutor returned no response")
+        return {"response": text[:8000], "citations": response.get("citations", []), "confidence": response.get("confidence", "uncertain"), "provider": "configured-http", "uncertainty": response.get("uncertainty", "External provider response requires grounding review.")}
 
 
 class LocalContextualTutor(ContextualTutorProvider):
@@ -76,14 +109,21 @@ class ContextualTutor:
     """Stable integration boundary for local or future hosted model providers."""
 
     def __init__(self, root=None, provider=None):
-        self.provider_name = provider or "local"
-        self.provider = LocalContextualTutor()
+        endpoint = provider or os.getenv("ACADEMY_TUTOR_ENDPOINT")
+        self.provider_name = "configured-http" if endpoint else "local"
+        self.provider = HttpContextualTutor(endpoint) if endpoint else LocalContextualTutor()
 
     def answer(self, context):
-        result = self.provider.answer(context)
+        try:
+            result = self.provider.answer(context)
+        except Exception as exc:
+            result = LocalContextualTutor().answer(context)
+            result["provider"] = "local-fallback"
+            result["uncertainty"] = "Configured AI provider unavailable; deterministic local coaching was used. " + str(exc)[:160]
+            result["fallback"] = True
         # Guard provider output: active sessions may never receive stored solutions.
         if context["state"].get("status") == "active":
-            forbidden = ("referenceRootCause", "recommendedRecovery")
+            forbidden = ("referenceRootCause", "recommendedRecovery", "preferred recovery")
             if any(token.lower() in str(result.get("response", "")).lower() for token in forbidden):
                 return {"mode":result.get("mode"),"response":"I cannot disclose the active assessment solution.","citations":result.get("citations", []),"confidence":"solution-withheld","provider":result.get("provider"),"context":result.get("context"),"uncertainty":result.get("uncertainty")}
         return result

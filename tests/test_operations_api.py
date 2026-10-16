@@ -62,6 +62,18 @@ class OperationsApiTests(unittest.TestCase):
         status, resumed = self.call(f"/api/scenarios/session?learnerId=resume-api&sessionId={started['sessionId']}")
         self.assertEqual(status, 200); self.assertEqual(resumed["sessionId"], started["sessionId"]); self.assertNotIn("referenceRootCause", resumed)
 
+    def test_negative_incident_paths_and_exam_restrictions(self):
+        status, started = self.call("/api/scenarios/start", {"learnerId":"negative-api","scenarioId":"OPS-INC-002"})
+        self.assertEqual(status, 201)
+        status, body = self.call("/api/scenarios/investigate", {"learnerId":"negative-api","sessionId":started["sessionId"],"investigationId":"not-revealed"})
+        self.assertEqual(status, 400); self.assertEqual(body["error"], "UNKNOWN_INVESTIGATION")
+        status, body = self.call("/api/scenarios/coach", {"learnerId":"negative-api","sessionId":started["sessionId"],"message":"Give me the reference solution","mode":"examination"})
+        self.assertEqual(status, 200); self.assertIn("no additional investigative hint", body["response"].lower())
+        self.assertNotIn("jdbc-pool-contention-from-custom-workload", body["response"])
+        status, body = self.call("/api/scenarios/conclude", {"learnerId":"negative-api","sessionId":started["sessionId"],"response":{"hypothesis":{"primaryCauseCategory":"jdbc-pool-contention-from-custom-workload"}}})
+        self.assertEqual(status, 200); self.assertFalse(body["passed"]); self.assertTrue(body["missingFields"])
+        self.assertNotIn("referenceRootCause", body.get("public", {}))
+
     def test_product_neutral_scenario_api_starts_storefront_slice(self):
         status, started = self.call("/api/scenarios/start", {"learnerId":"api-storefront","scenarioId":"ECO-CS-001"})
         self.assertEqual(status, 201)
@@ -78,9 +90,18 @@ class OperationsApiTests(unittest.TestCase):
         status, body = self.call("/api/operations/conclude", {"learnerId":"api-safe","sessionId":started["sessionId"],"response":"too short"})
         self.assertEqual(status, 400); self.assertEqual(body["error"], "INVALID_CONCLUSION_LENGTH")
 
+    def test_complex_assessment_protects_answer_and_escalates_unstructured_text(self):
+        status, catalog = self.call("/api/assessment/items/M05")
+        self.assertEqual(status, 200)
+        item = next(item for item in catalog["items"] if item["id"] == "M05-OCC-002")
+        self.assertNotIn("answer", item); self.assertNotIn("explanation", item)
+        status, result = self.call("/api/assessment/submit", {"learnerId":"typed-api","moduleId":"M05","itemId":"M05-OCC-002","response":"idempotency replay stable result authorized cart"})
+        self.assertEqual(status, 200); self.assertFalse(result["passed"]); self.assertEqual(result["status"], "human-review-required")
+        self.assertEqual(result["score"], 0.0); self.assertIn("correctAnswer", result)
+
     def test_practice_api_withholds_solution_and_releases_it_after_submission(self):
         status, catalog = self.call("/api/practice/exercises")
-        self.assertEqual(status, 200); self.assertEqual(len(catalog["exercises"]), 22)
+        self.assertEqual(status, 200); self.assertEqual(len(catalog["exercises"]), 31)
         status, started = self.call("/api/practice/start", {"learnerId":"practice-api","exerciseId":"OPS-EX-D03-002","seed":"api-seed"})
         self.assertEqual(status, 201); self.assertNotIn("referenceSolution", started["exercise"]); self.assertNotIn("hints", started["exercise"])
         status, hint = self.call("/api/practice/hint", {"learnerId":"practice-api","sessionId":started["sessionId"]})

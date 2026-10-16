@@ -303,7 +303,8 @@ class OperationsSimulation:
         for item_id in state.get("investigations", []):
             item = next((candidate for candidate in scenario.get("investigations", []) if candidate["id"] == item_id), None)
             if item: revealed.append({"id":item_id,"evidence":item.get("evidence", {})})
-        result = self.contextual_tutor.answer({"scenario":scenario,"state":state,"message":message,"mode":mode,"revealedEvidence":revealed,"availableInvestigations":self._available(scenario,state,"investigations"),"availableActions":self._available(scenario,state,"actions")})
+        prior_attempts = self.store.incident_history(learner_id).get("sessions", [])[-3:]
+        result = self.contextual_tutor.answer({"scenario":scenario,"state":state,"message":message,"mode":mode,"revealedEvidence":revealed,"availableInvestigations":self._available(scenario,state,"investigations"),"availableActions":self._available(scenario,state,"actions"),"priorAttempts":prior_attempts,"references":scenario.get("sourceIds", [])})
         self.store.update_incident(session_id, state, "tutor", "coach", {"message":str(message)[:2000]}, result); return result
 
     def reset(self, learner_id, session_id):
