@@ -5,7 +5,7 @@
     {"id":"OPS-V01","title":"SAP Commerce Cloud Operations Architecture","status":"planned","domains":["OPS-D01"]},
     {"id":"OPS-V02","title":"SAP Commerce Cloud Administration and Cloud Portal","status":"planned","domains":["OPS-D02"]},
     {"id":"OPS-V03","title":"Commerce Deployment and Release Engineering","status":"prototype-module-publication","domains":["OPS-D03"],"implementedModules":["OPS-D03-M01"]},
-    {"id":"OPS-V04","title":"Observability, Monitoring, and Diagnostic Engineering","status":"planned","domains":["OPS-D04"]},
+    {"id":"OPS-V04","title":"Observability, Monitoring, and Diagnostic Engineering","status":"prototype-module-publication","domains":["OPS-D04"],"implementedModules":["OPS-D04-M03"]},
     {"id":"OPS-V05","title":"SAP Commerce Performance and JVM Troubleshooting","status":"planned","domains":["OPS-D06"]},
     {"id":"OPS-V06","title":"Commerce Data and Integration Operations","status":"planned","domains":["OPS-D07","OPS-D08"]},
     {"id":"OPS-V07","title":"SAP Commerce Security Operations","status":"planned","domains":["OPS-D09"]},

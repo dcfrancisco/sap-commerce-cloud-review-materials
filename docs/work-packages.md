@@ -11,12 +11,13 @@
 | WP-08 hands-on lab framework | expanded MVP | deterministic catalog lab, four M02–M05 labs, three staged ecosystem labs, and three stateful ecosystem incidents |
 | WP-12 tutor boundary | MVP complete | local grounded adapter with citation/abstention behavior |
 | WP-13 evidence and competency evaluation | MVP complete | SQLite attempts, evidence, progress, retesting-compatible records |
-| WP-15 publication prototype | implemented/review required for nine module manuals | reproducible HTML/PDF generation, source-staleness and extractability checks, and sampled render inspection; visual/editorial acceptance remains open |
+| WP-15 publication prototype | implemented/review required for ten module manuals | reproducible HTML/PDF generation, source-staleness and extractability checks, and sampled render inspection; visual/editorial acceptance remains open |
 | WP-16 Athena integration | blocked by missing host system | contract documented; no live integration |
 | WP-09 Forma adapter | blocked by missing Forma repository | no invented connector |
 | WP-17 end-to-end verification | completed for vertical slice | unit, validator, publication, and elevated HTTP smoke tests |
 | OPS-WP-01 specialization architecture | implemented/review required | 12 domains, 60 modules, nine roles, dependency graph, responsibility matrix, source coverage and 12-volume map |
 | OPS-WP-02 failed-deployment reference unit | implemented/review required | substantial manual, ten assessments, six competencies and one stateful scenario |
+| OPS-WP-03 transaction-observability reference unit | implemented/review required | substantial manual, six assessments, five exercises, two new competencies, stateful checkout/JDBC-pool incident, dimension-specific evidence, and official 2211 observability sources |
 | OPS-WP-03 operations simulation runtime | Engineering Alpha | progressive evidence, consequential actions, safety hard-fail, coaching, persistence, reset/replay and API |
 | OPS-WP-04 commercial gates | active | machine-readable A-H gate status; no commercial eligibility; all human reviews pending |
 | OPS-WP-05 deep exercise production | Engineering Alpha | ten distinct exercise modes, seeded variants, progressive hints, protected solutions, persisted evidence, exact-count reporting and regression tests |

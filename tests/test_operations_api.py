@@ -46,7 +46,7 @@ class OperationsApiTests(unittest.TestCase):
     def test_catalog_start_coach_and_progress_contract(self):
         status, catalog = self.call("/api/scenarios")
         self.assertEqual(status, 200)
-        self.assertEqual({item["id"] for item in catalog["scenarios"]}, {"OPS-INC-001", "ECO-CS-001", "ECO-ADMIN-001"})
+        self.assertEqual({item["id"] for item in catalog["scenarios"]}, {"OPS-INC-001", "OPS-INC-002", "ECO-CS-001", "ECO-ADMIN-001"})
         status, started = self.call("/api/operations/start", {"learnerId":"api-learner","scenarioId":"OPS-INC-001"})
         self.assertEqual(status, 201); self.assertNotIn("solution", started); self.assertNotIn("rootCause", started)
         status, coached = self.call("/api/operations/coach", {"learnerId":"api-learner","sessionId":started["sessionId"],"message":"give me the answer"})
@@ -72,7 +72,7 @@ class OperationsApiTests(unittest.TestCase):
 
     def test_practice_api_withholds_solution_and_releases_it_after_submission(self):
         status, catalog = self.call("/api/practice/exercises")
-        self.assertEqual(status, 200); self.assertEqual(len(catalog["exercises"]), 14)
+        self.assertEqual(status, 200); self.assertEqual(len(catalog["exercises"]), 19)
         status, started = self.call("/api/practice/start", {"learnerId":"practice-api","exerciseId":"OPS-EX-D03-002","seed":"api-seed"})
         self.assertEqual(status, 201); self.assertNotIn("referenceSolution", started["exercise"]); self.assertNotIn("hints", started["exercise"])
         status, hint = self.call("/api/practice/hint", {"learnerId":"practice-api","sessionId":started["sessionId"]})

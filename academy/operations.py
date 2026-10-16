@@ -130,7 +130,14 @@ class OperationsSimulation:
         passed = score >= scoring["passThreshold"] and safe_recovery and verification and not unsafe
         state["status"] = "completed"; state["finalResponse"] = response
         result = {"sessionId":session_id, "score":score, "passed":passed, "dimensions":dimensions, "unsafeActions":state["unsafeActions"], "evidenceReviewed":state["investigations"], "actionsTaken":state["actions"], "referenceRootCause":scenario["solution"]["rootCause"], "recommendedRecovery":scenario["solution"]["recovery"], "feedback":scenario.get("feedback", "An expert pass requires evidence-led diagnosis, a bounded safe recovery, independent verification, and no prohibited action.")}
-        competency_scores = {competency:score for competency in scenario["competencyIds"]}
+        dimension_map = scoring.get("competencyDimensions", {})
+        competency_scores = {}
+        for competency in scenario["competencyIds"]:
+            mapped = dimension_map.get(competency, [])
+            competency_scores[competency] = round(
+                sum(dimensions[name] for name in mapped) / len(mapped), 2
+            ) if mapped else score
+        result["competencyScores"] = competency_scores
         self.store.update_incident(session_id, state, "conclusion", "submit-conclusion", {"response":response}, {"score":score,"passed":passed})
         self.store.complete_incident(session_id, competency_scores, result); return result
 

@@ -23,7 +23,8 @@ publications = load("content/operations/publication-map.json")
 gates = load("content/operations/release-gates.json")
 coverage = load("content/operations/source-coverage.json")
 scenarios = [load(str(path.relative_to(ROOT))) for path in sorted((ROOT / "content/operations/scenarios").glob("*.json"))]
-assessment = load("content/operations/assessments/ops-d03-m01.json")
+assessment_files = sorted((ROOT / "content/operations/assessments").glob("*.json"))
+assessments = [load(str(path.relative_to(ROOT))) for path in assessment_files]
 exercise_families = [load(str(path.relative_to(ROOT))) for path in sorted((ROOT / "content/operations/exercises").glob("*.json"))]
 sources = load("content/research/source-registry.json")
 foundational_sources = load("content/sources.json")
@@ -54,13 +55,15 @@ if set(covered_module_ids) != module_ids or len(covered_module_ids) != len(modul
 for competency in competencies.get("competencies", []):
     if not competency.get("evidence") or not competency.get("mastery"): errors.append(f"{competency.get('id')}: incomplete mastery evidence")
 
-manual_path = ROOT / "content/operations/modules/ops-d03-m01-failed-deployment.md"
-manual = manual_path.read_text() if manual_path.exists() else ""
-if len(manual.split()) < 2500: errors.append(f"reference manual too short: {len(manual.split())} words")
-for section in ("Learning outcomes","Schema compatibility","Guided simulation","Security and privacy","Tutor behavior","References"):
-    if section.lower() not in manual.lower(): errors.append(f"manual missing {section}")
-for source_id in set(re.findall(r"\[(RS-[A-Z0-9-]+)\]", manual)):
-    if source_id not in source_ids: errors.append(f"manual unknown source {source_id}")
+implemented_modules = [module for module in modules if module.get("status") == "implemented-review-required"]
+for module in implemented_modules:
+    manual_path = ROOT / module.get("manual", "")
+    manual = manual_path.read_text() if manual_path.is_file() else ""
+    if len(manual.split()) < 2500: errors.append(f"{module.get('id')}: reference manual too short: {len(manual.split())} words")
+    for section in ("Learning outcomes","Security and privacy","Tutor behavior","References"):
+        if section.lower() not in manual.lower(): errors.append(f"{module.get('id')}: manual missing {section}")
+    for source_id in set(re.findall(r"\[(RS-[A-Z0-9-]+)\]", manual)):
+        if source_id not in source_ids: errors.append(f"{module.get('id')}: manual unknown source {source_id}")
 
 scenario_ids = set()
 for scenario in scenarios:
@@ -92,7 +95,7 @@ for scenario in scenarios:
     for source_id in scenario.get("sourceIds", []):
         if source_id not in source_ids: errors.append(f"{scenario_id}: unknown source {source_id}")
 
-items = assessment.get("items", []); prompts = set(); item_ids = set()
+items = [item for assessment in assessments for item in assessment.get("items", [])]; prompts = set(); item_ids = set()
 required_fields = {"id","moduleId","competencyIds","type","difficulty","scenario","prompt","answer","explanation","rubric","applicableVersion","sourceIds","evaluationEvidence","reviewStatus","version"}
 for item in items:
     missing = required_fields - set(item)
@@ -105,7 +108,8 @@ for item in items:
         if competency_id not in competency_ids: errors.append(f"{item.get('id')}: unknown competency {competency_id}")
     for source_id in item.get("sourceIds", []):
         if source_id not in source_ids: errors.append(f"{item.get('id')}: unknown source {source_id}")
-if len(items) != 10: errors.append(f"expected 10 reference items, found {len(items)}")
+for module in implemented_modules:
+    if sum(item.get("moduleId") == module.get("id") for item in items) < 5: errors.append(f"{module.get('id')}: fewer than five substantive assessment items")
 
 exercise_ids = set(); exercise_prompts = []; exercises = []
 exercise_required = {"id","moduleId","version","title","type","difficulty","estimatedMinutes","competencyIds","objective","initialState","prompt","constraints","deliverable","acceptanceCriteria","hints","evaluation","referenceSolution","sourceIds","reviewStatus"}

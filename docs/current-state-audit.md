@@ -22,9 +22,9 @@ The supplied workspace contained only `.` and had no Git metadata, source files,
 | --- | --- | --- |
 | Learner service | Local Python HTTP service with module, assessment, tutor, progress, incident, and operations APIs | No production auth, tenant isolation, rate limiting, or hosted deployment |
 | Persistence | SQLite assessment attempts, competency evidence, incident sessions, event streams, and results | Local single-user model only; migrations and retention policy need formalization |
-| Ecosystem simulation | Three deterministic stateful scenarios - Composable Storefront stale price, Backoffice sync/index failure, and failed deployment - with progressive evidence, consequential actions, unsafe hard-fails, reset, scoring, coaching, and persisted evidence | Synthetic only; no claim of complete SAP, storefront, CDN, Backoffice, or cloud runtime emulation |
-| Deep practice | Ten operations exercise modes plus four developer testing exercises with seeded constraints, progressive hints, protected solutions, deterministic grading, separate implementation/testing evidence, and persisted assisted/independent evidence | Machine-validated only; no human educational or technical review; platform test plans unexecuted |
-| Content | General 27-module roadmap plus Operations/SRE 60-module specialization roadmap | Eight general and one operations module authored; all remain review-required |
+| Ecosystem simulation | Four deterministic stateful scenarios - Composable Storefront stale price, Backoffice sync/index failure, failed deployment, and checkout/JDBC-pool contention - with progressive evidence, consequential actions, unsafe hard-fails, reset, scoring, coaching, and persisted evidence | Synthetic only; no claim of complete SAP, storefront, CDN, Backoffice, Dynatrace, database, or cloud runtime emulation |
+| Deep practice | Fifteen operations exercises plus four developer testing exercises with seeded constraints, progressive hints, protected solutions, deterministic grading, separate competency evidence, and persisted assisted/independent evidence | Machine-validated only; no human educational or technical review; platform test plans unexecuted |
+| Content | General 27-module roadmap plus Operations/SRE 60-module specialization roadmap | Eight general and two operations modules authored; all remain review-required |
 | Publication | Reproducible HTML/PDF module generation and machine QA | Human technical/editorial/accessibility review pending |
 | Athena Hub | Versioned boundary contract only | Host repository unavailable; no integration claim |
 | Forma | Unavailable | No storefront connector created |
@@ -32,4 +32,4 @@ The supplied workspace contained only `.` and had no Git metadata, source files,
 
 ## Known research gaps
 
-The source registry now distinguishes inspected official pages from restricted, historical, community, and independent sources. Current official pages for Composable Storefront, Backoffice, cloud operations, and SAP Commerce JUnit/JUnit 5 test infrastructure were inspected on 2026-10-16. Subscription-specific behavior, restricted support content, and live-runtime validation remain explicit gaps.
+The source registry now distinguishes inspected official pages from restricted, historical, community, and independent sources. Current official pages for Composable Storefront, Backoffice, cloud operations, Dynatrace transaction/database diagnosis, CronJob aspect behavior, and SAP Commerce JUnit/JUnit 5 test infrastructure were inspected on 2026-10-16. Subscription-specific metric names, retention, permissions, restricted support content, and live-runtime validation remain explicit gaps.
